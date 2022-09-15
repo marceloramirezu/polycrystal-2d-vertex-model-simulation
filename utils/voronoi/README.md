@@ -1,0 +1,1 @@
+python .\voronoi.py 100 0 vertices.txt borders.txt orientaciones.txt se.txt
