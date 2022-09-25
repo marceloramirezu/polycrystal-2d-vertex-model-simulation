@@ -1,4 +1,5 @@
 
+from ast import For
 from utils.vertex_model_show import vertex_model_show
 from options import *
 from utils.geometry import *
@@ -47,6 +48,14 @@ def events_pygame(list_states):
                 list_states["show_ids"] = True                
             list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
             list_states["changes"] = True
+    if keys[pygame.K_t]:
+        if(list_states["move_ticker"] == 0):        
+            if(list_states["show_t_ext"]):
+                list_states["show_t_ext"] = False   
+            else:
+                list_states["show_t_ext"] = True                
+            list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+            list_states["changes"] = True
 
     if keys[pygame.K_v]:
         if(list_states["move_ticker"] == 0):        
@@ -93,19 +102,27 @@ def events_pygame(list_states):
 
     
     if keys[pygame.K_LEFT]:
-        list_states["prev"] = True       
-        list_states["changes"] = True
+            if(list_states["move_ticker"] == 0):         
+                list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+                list_states["prev"] = True       
+                list_states["changes"] = True
     if keys[pygame.K_RIGHT]:
-        list_states["next"] = True      
-        list_states["changes"] = True     
+            if(list_states["move_ticker"] == 0):         
+                list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+                list_states["next"] = True      
+                list_states["changes"] = True     
 
     if keys[pygame.K_DOWN]:
-        list_states["prev_x2"] = True   
-        list_states["changes"] = True            
+            if(list_states["move_ticker"] == 0):         
+                list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+                list_states["prev_x2"] = True   
+                list_states["changes"] = True            
     
     if keys[pygame.K_UP]:
-        list_states["next_x2"] = True  
-        list_states["changes"] = True
+            if(list_states["move_ticker"] == 0):         
+                list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+                list_states["next_x2"] = True  
+                list_states["changes"] = True
 
     
     if keys[pygame.K_a]:
@@ -129,12 +146,17 @@ def events_pygame(list_states):
         list_states["changes"] = True              
     else:
         if keys[pygame.K_q]:
-            list_states["moves"]["plus_zoom"] = True  
-            list_states["changes"] = True             
+            if(list_states["move_ticker"] == 0):         
+                list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+                list_states["moves"]["plus_zoom"] = True  
+                list_states["changes"] = True             
             
-        if keys[pygame.K_e]:
-            list_states["moves"]["minus_zoom"] = True  
-            list_states["changes"] = True             
+        if keys[pygame.K_e]:            
+            if(list_states["move_ticker"] == 0):        
+                list_states["moves"]["minus_zoom"] = True  
+                list_states["changes"] = True             
+                list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+                
         
     if keys[pygame.K_1]:
         list_states["multi_iter"] = 1  
@@ -202,6 +224,7 @@ def main():
         "show_velocities": False,
         "show_alpha": False,
         "show_ids": False,
+        "show_t_ext": False,
         "show_options": False,
         "start": False,
         "prev": False,
@@ -284,7 +307,6 @@ def main():
             #if(list_states_new[""])
 
         if(not list_states_new["pause"] or plus_iters !=0 or moves!=0 or start!=0 or list_states_new["changes"]): # si existe un cambio de estado o no se esta en pausa
-            print(f"PLUS_ITERS: {plus_iters}")
             list_states_new["next"] = False
             list_states_new["changes"] = False
             list_states_new["next_x2"] = False
@@ -297,10 +319,13 @@ def main():
             list_states_new["moves"]["plus_zoom"] = False
             list_states_new["moves"]["minus_zoom"] = False
             vxm_show.next_iteration(list_states_new, plus_iters, move_x, move_y, zoom, zoom_0)
-            vxm_show.print_ui()
+            
+            actual_fps = int(fps_clock.get_fps()),
+
+            vxm_show.print_ui(actual_fps)
             pygame.display.flip()
             list_states = list_states_new 
-
+            
 
 
     pygame.quit()

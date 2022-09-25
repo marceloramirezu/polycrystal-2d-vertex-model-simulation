@@ -1,11 +1,8 @@
-import numpy as np;
+import numpy as np
 import pygame
 from utils.geometry import *
 from math import pi
 
-dt_vertex = np.dtype([('id', np.uint), ('pos_vector', np.float64, (2,)), ('vel_vector', np.float64, (2,)), ('energy', np.float64), ('enable', np.bool_)])
-dt_border = np.dtype([('id', np.uint), ('vertices', np.uint, (2,)), ('diff_vector', np.float64, (2,)), ('gamma', np.float64), ('arc_len', np.float64), ('energy', np.float64), ('enable', np.bool_)])
-dt_grain = np.dtype([('id', np.uint), ('alpha', np.float64), ('vertices', np.uint, (50,))])
 
 class vertex_model_show:
     gamma_0= 0
@@ -39,9 +36,38 @@ class vertex_model_show:
         self.options_show_tam = OPTIONS_SHOW_TAM
         self.options_vertex_model = OPTIONS_VERTEX_MODEL
 
-        self.vertices = np.zeros(self.n_vertices, dtype=dt_vertex) 
-        self.borders = np.zeros(self.n_borders, dtype=dt_border) 
-        self.grains = np.zeros(self.n_grains, dtype=dt_grain) # (id, alpha, x1, x2, x3, ..., x50)
+        """ DUPLICADO REVISAR!! """
+        # (id, pos_vector, vel_vector, borders, energy, enabled)
+        # (id, (x, y), (vx, vy), (b1, b2, b3), energy, enabled))
+        # borders: contiene los indices de los bordes guardados en self.borders
+        self.dt_vertex = np.dtype([('id', np.uint), ('pos_vector', np.longdouble, (2,)), ('vel_vector', np.longdouble, (2,)), ('borders', np.uint, (3,)), ('grains', np.int, (3,)), ('energy', np.longdouble), ('enabled', np.bool_)])
+        self.vertices = np.zeros(self.n_vertices, dtype=self.dt_vertex) 
+
+        # (id, vertices, diff_vector, gamma, arc_len, energy, enabled)
+        # (id, (x, y), (diff_x, diff_y), gamma, arc_len, energy, enabled))
+        # vertices: contiene los indices de los vertices guardados en self.vertices
+        self.dt_border = np.dtype([
+            ('id', np.uint), 
+            ('vertices', np.uint, (2,)), 
+            ('grains', np.int, (2,)), 
+            ('tangent_vector', np.longdouble, (2,)), 
+            ('diff_vector', np.longdouble, (2,)), 
+            ('gamma', np.longdouble), 
+            ('arc_len', np.longdouble), 
+            ('t_ext', np.longdouble), 
+            ('energy', np.longdouble), 
+            ('enabled', np.bool_), 
+            ('ext', np.int_)
+        ])
+        self.borders = np.zeros(self.n_borders, dtype=self.dt_border) 
+
+        # (id, alpha, vertices)
+        # (id, alpha, (x0, x1, ...,xn))
+        # vertices: contiene los indices de los vertices guardados en self.vertices
+        self.dt_grain = np.dtype([('id', np.uint), ('alpha', np.longdouble), ('vertices', np.int, (50,))])
+        self.grains = np.zeros(self.n_grains, dtype=self.dt_grain) 
+        """ FIN DUPLICADO REVISAR!! """
+
         self.t = 0
 
         self.show_vertices=True
@@ -57,14 +83,8 @@ class vertex_model_show:
             for i in range(0,20):
                 if aux == 10**i:
                     self.n_zeros_delta_t = i
-                    
-        
-        #self.leer_granos_t()
-
     
-    def print_ui(self):
-        
-
+    def print_ui(self, actual_fps):    
         corners = [
             (0,0), (0,1), (1,0), (1,1)
         ]
@@ -119,6 +139,7 @@ class vertex_model_show:
                 f"iter: {self.t} ({self.multi_iter} iter x frame)",
                 #f"t: {round(self.t*self.options_vertex_model['DELTA_T'], self.n_zeros_delta_t)}",
                 f"zoom: {self.zoom}x",
+                f"FPS: {actual_fps}",
             ],
             [           
             ],
@@ -141,47 +162,18 @@ class vertex_model_show:
                 self.screen.blit(line, lineRect)
                 aux += 20
         
-
-
     def leer_granos_t(self):
-        color_vertex = self.options_show_color["COLOR_VERTEX"]
-        color_border = self.options_show_color["COLOR_BORDER"]
-        color_vel = self.options_show_color["COLOR_VEL_VERTEX"]
-        
-        tam_vertice = self.options_show_tam["VERTEX"]
-        tam_vel_vertice = self.options_show_tam["VERTEX_VEL"]
-        tam_vel_vertice_multi = self.options_show_tam["VERTEX_VEL_MULT"]
-        
-                
-        self.vertices = np.zeros(self.n_vertices, dtype=dt_vertex) 
-        self.borders = np.zeros(self.n_borders, dtype=dt_border) 
-        self.grains = np.zeros(self.n_grains, dtype=dt_grain) # (id, alpha, x1, x2, x3, ..., x50)
+        self.vertices = np.zeros(self.n_vertices, dtype=self.dt_vertex) 
+        self.borders = np.zeros(self.n_borders, dtype=self.dt_border) 
+        self.grains = np.zeros(self.n_grains, dtype=self.dt_grain) # (id, alpha, x1, x2, x3, ..., x50)
         # VERTICES ------------------------------
         carpeta = "vertices"
         archivo = f"{self.t}"
         id_vertex = -1
-        with open(f'out/{carpeta}/{archivo}.txt', 'r') as file1:
-            for line in file1:
-                aux = line.split(" ")          
-                if(len(aux) == 8):  
-                    id = aux[0]
-                    x = float(aux[1])
-                    y = float(aux[2])        
-                    vx = float(aux[3])
-                    vy = float(aux[4])
-                    self.vertices[id_vertex]["id"] = id
-                    self.vertices[id_vertex]["pos_vector"][0] = x
-                    self.vertices[id_vertex]["pos_vector"][1] = y
-                    self.vertices[id_vertex]["vel_vector"][0] = vx
-                    self.vertices[id_vertex]["vel_vector"][1] = vy
-                    xi_aux = (x+ self.offsetx, y+ self.offsety)
-                    xi_aux = self.adjust_offset(xi_aux)
-                    xi_aux = (xi_aux[0]*self.aux_zoom, xi_aux[1]*self.aux_zoom)
-                    if(self.show_vertices):
-                        self.imprimir_vertice(xi_aux[0], xi_aux[1], id)
-                    if(self.show_velocities):
-                        self.imprimir_vel_vertice(xi_aux[0], xi_aux[1], vx*self.aux_zoom, vy*self.aux_zoom)
-                id_vertex += 1
+        with open(f'out/{carpeta}/{archivo}.npy', 'rb') as file1:
+            self.vertices = np.load(file1)
+            if (self.show_vertices):
+                self.imprimir_vertices()
 
         # BORDERS --------------------------------
         if(self.show_borders):
@@ -189,82 +181,129 @@ class vertex_model_show:
             archivo = f"{self.t}"
             id_border = 0
             id_border = -1
-            with open(f'out/{carpeta}/{archivo}.txt', 'r') as file1:
-                for line in file1:
-                    aux = line.split(" ") 
-                    if(len(aux) == 4):  
-                        id = aux[0]
-                        xi_index = int(aux[1])
-                        xf_index = int(aux[2])
-                        xi = self.vertices[xi_index]
-                        xf = self.vertices[xf_index]
+            with open(f'out/{carpeta}/{archivo}.npy', 'rb') as file1:
+                self.borders = np.load(file1)
+                self.imprimir_bordes()
 
-                        xi_aux = (xi["pos_vector"][0] + self.offsetx, xi["pos_vector"][1] + self.offsety)
-                        xi_aux = self.adjust_offset(xi_aux)
-                        xf_aux = (xf["pos_vector"][0] + self.offsetx, xf["pos_vector"][1] + self.offsety)
-                        xf_aux = self.adjust_offset(xf_aux)
-                        t_wrap = wrap_distances(xi_aux, xf_aux)
-                        xi_wrap_aux = (t_wrap["xi"][0]*self.aux_zoom, t_wrap["xi"][1]*self.aux_zoom)
-                        xf_wrap_aux = (t_wrap["xf"][0]*self.aux_zoom, t_wrap["xf"][1]*self.aux_zoom)
-
-                        sum_x1 = (xi_aux[0] + xf_aux[0])*self.aux_zoom/2
-                        sum_y1 = (xi_aux[1] + xf_aux[1])*self.aux_zoom/2
-                        wrap = t_wrap["wrap"]
-                        if(wrap): # si se produce wrap, se duplica el arco en el limite del area contrario
-                            t_wrap2 = wrap_distances(xf_aux, xi_aux)
-                            xi_wrap2_aux = (t_wrap2["xi"][0]*self.aux_zoom, t_wrap2["xi"][1]*self.aux_zoom)
-                            xf_wrap2_aux = (t_wrap2["xf"][0]*self.aux_zoom, t_wrap2["xf"][1]*self.aux_zoom)
-                            
-                            self.imprimir_borde( xi_wrap2_aux, xf_wrap2_aux)          
-                            #sum_x1 = x_xi+x_xf
-                            #sum_y1 = y_xi+y_xf
-                            #self.imprimir_id_borde( (sum_x2/2), (sum_y2/2), id) 
-                        else:    
-                            if(self.show_ids):
-                                self.imprimir_id_borde( sum_x1, sum_y1, id)
-                        self.imprimir_borde( xi_wrap_aux, xf_wrap_aux)
-                        id_border+=1
-            
         carpeta = "grains"
         archivo = f"{self.t}"
         cont_grain = -1
-        with open(f'out/{carpeta}/{archivo}.txt', 'r') as file1:
-            for line in file1:
-                if(cont_grain >= 0  and len(aux)>=3):
-                    aux = line.split(" ") 
-                    id_grain_aux = aux[0]
-                    alpha = float(aux[1])
-                    v_pos = self.vertices[int(aux[2])]["pos_vector"]
-                    arr_pos = [v_pos]
-                    sum_x = v_pos[0]
-                    sum_y = v_pos[1]
-                    len_aux_2 = len(aux)-2
-                    for i in range(3, len(aux)):
-                        
-                        v_pos = self.vertices[int(aux[i])]["pos_vector"]
-                        t_wrap = wrap_distances(arr_pos[i-3], v_pos)
-                        arr_pos.append( [t_wrap["xf"][0], t_wrap["xf"][1]] )
-                        sum_x = sum_x+t_wrap["xf"][0]
-                        sum_y = sum_y+t_wrap["xf"][1]
-                    sum_x = (sum_x/(len_aux_2))+self.offsetx
-                    sum_y = (sum_y/(len_aux_2))+self.offsety
-                    xi_aux = (sum_x, sum_y)
-                    xi_aux = self.adjust_offset( xi_aux )                        
-                    xi_aux = (xi_aux[0]*self.aux_zoom, xi_aux[1]*self.aux_zoom)
+        if(self.show_alpha):
+            with open(f'out/{carpeta}/{archivo}.npy', 'rb') as file1:
+                self.grains = np.load(file1)
+                self.imprimir_granos()
+        
+    def imprimir_vertices(self):
+        for i in self.vertices:
+            id = i["id"]
+            x = i["pos_vector"][0]
+            y = i["pos_vector"][1]       
+            vx = i["vel_vector"][0]
+            vy = i["vel_vector"][1]
+            xi_aux = (x+ self.offsetx, y+ self.offsety)
+            xi_aux = self.adjust_offset(xi_aux)
+            xi_aux = (xi_aux[0]*self.aux_zoom, xi_aux[1]*self.aux_zoom)
+            if(self.show_vertices):
+                self.imprimir_vertice(xi_aux[0], xi_aux[1], id)
+            if(self.show_velocities):
+                self.imprimir_vel_vertice(xi_aux[0], xi_aux[1], vx*self.aux_zoom, vy*self.aux_zoom)
+    
+    def imprimir_bordes(self):
+        for i in self.borders:
+            id = i["id"]
+            xi_index =  i["vertices"][0]
+            xf_index = i["vertices"][1]
+            arc_len = i["arc_len"]
+            t_ext = i["t_ext"]
+            t_ext_minor_to_delta_t = i["ext"]
+            g0 = i["grains"][0]
+            g1 = i["grains"][1]
+            xi = self.vertices[xi_index]
+            xf = self.vertices[xf_index]
 
-                    self.imprimir_grano(xi_aux[0], xi_aux[1], id_grain_aux, alpha)
-                cont_grain+=1
+            xi_aux = (xi["pos_vector"][0] + self.offsetx, xi["pos_vector"][1] + self.offsety)
+            xi_aux = self.adjust_offset(xi_aux)
+            xf_aux = (xf["pos_vector"][0] + self.offsetx, xf["pos_vector"][1] + self.offsety)
+            xf_aux = self.adjust_offset(xf_aux)
+            t_wrap = wrap_distances(xi_aux, xf_aux)
+            xi_wrap_aux = (t_wrap["xi"][0]*self.aux_zoom, t_wrap["xi"][1]*self.aux_zoom)
+            xf_wrap_aux = (t_wrap["xf"][0]*self.aux_zoom, t_wrap["xf"][1]*self.aux_zoom)
+
+            sum_x1 = (xi_aux[0] + xf_aux[0])*self.aux_zoom/2
+            sum_y1 = (xi_aux[1] + xf_aux[1])*self.aux_zoom/2
+            wrap = t_wrap["wrap"]
+            if(wrap): # si se produce wrap, se duplica el arco en el limite del area contrario
+                t_wrap2 = wrap_distances(xf_aux, xi_aux)
+                xi_wrap2_aux = (t_wrap2["xi"][0]*self.aux_zoom, t_wrap2["xi"][1]*self.aux_zoom)
+                xf_wrap2_aux = (t_wrap2["xf"][0]*self.aux_zoom, t_wrap2["xf"][1]*self.aux_zoom)
+                
+                self.imprimir_borde( xi_wrap2_aux, xf_wrap2_aux, t_ext_minor_to_delta_t)          
+                #sum_x1 = x_xi+x_xf
+                #sum_y1 = y_xi+y_xf
+                #self.imprimir_id_borde( (sum_x2/2), (sum_y2/2), id) 
+                        
+            self.imprimir_borde( xi_wrap_aux, xf_wrap_aux, t_ext_minor_to_delta_t)
+            if(not wrap):    
+                if(self.show_ids and int(id) < 1000):
+                    if(self.show_t_ext):
+                        self.imprimir_id_borde(sum_x1, sum_y1, id, arc_len, t_ext, imprimir=1)
+                    else:
+                        self.imprimir_id_borde(sum_x1, sum_y1, id, arc_len, t_ext, imprimir=0)
+
+    def imprimir_granos(self):
+        for i in self.grains:
+            id_grain_aux = i["id"]
+            alpha = i["alpha"]
+            vertices = i["vertices"]
+            arr_pos = [self.vertices[vertices[0]]["pos_vector"]]
+            sum_x = self.vertices[vertices[0]]["pos_vector"][0]
+            sum_y = self.vertices[vertices[0]]["pos_vector"][1]
+            cont_vertices = 1
+            for j in range(1, 50):                        
+                v_pos = self.vertices[vertices[j]]["pos_vector"]
+                t_wrap = wrap_distances(arr_pos[j-1], v_pos)
+                arr_pos.append( [t_wrap["xf"][0], t_wrap["xf"][1]] )
+                sum_x = sum_x+t_wrap["xf"][0]
+                sum_y = sum_y+t_wrap["xf"][1]
+            sum_x = (sum_x/(cont_vertices))+self.offsetx
+            sum_y = (sum_y/(cont_vertices))+self.offsety
+            xi_aux = (sum_x, sum_y)
+            xi_aux = self.adjust_offset( xi_aux )                        
+            xi_aux = (xi_aux[0]*self.aux_zoom, xi_aux[1]*self.aux_zoom)
+            self.imprimir_grano(xi_aux[0], xi_aux[1], id_grain_aux, alpha)
         
     def read_zoom_offset(self, move_x, move_y, zoom, zoom_0):
+        
+        if(self.zoom > 1200):
+            zoom = zoom*25
+        elif(self.zoom > 800):
+            zoom = zoom*20
+        elif(self.zoom > 250):
+            zoom = zoom*15
+        elif(self.zoom > 100):
+            zoom = zoom*10
+        elif(self.zoom > 50):
+            zoom = zoom*5
+        if(self.zoom > 10):
+            zoom = zoom*2
+        else:
+            pass
+        """ elif(self.zoom > 1000):
+            zoom = zoom*100
+        elif(self.zoom > 3000):
+            zoom = zoom*200 """
+
         self.zoom = self.zoom + zoom
         if(zoom_0 == 1):
             self.zoom = 1
+            self.offsetx = 0
+            self.offsety = 0
         else:
             if(self.zoom < 1):
                 self.zoom = 1
 
         self.aux_zoom = self.zoom*self.options_show["RESOLUTION"]
-
+        
         offsetx = self.offsetx + (move_x*10/self.aux_zoom)
         offsety = self.offsety + (move_y*10/self.aux_zoom)
         vector_aux = (offsetx, offsety)
@@ -292,6 +331,7 @@ class vertex_model_show:
         self.show_velocities =  list_states["show_velocities"]
         self.show_borders =  list_states["show_borders"]
         self.show_ids =  list_states["show_ids"]
+        self.show_t_ext = list_states["show_t_ext"]
         self.show_options =  list_states["show_options"]
         self.show_alpha =  list_states["show_alpha"]
         self.multi_iter = list_states["multi_iter"]
@@ -301,30 +341,28 @@ class vertex_model_show:
         if(plus_iters > 0):
             for i in range(0, plus_iters):
                 if((self.t) < self.options_vertex_model["MAX_ITER"]):
-                    self.t = self.t+1
+                    self.t = self.t+1*self.options_vertex_model["ITERS_BETWEEN_PRINTS"]
                 else:
                     self.t = 0
         if(plus_iters < 0):
             for i in range(0, (plus_iters*-1)):
                 if(self.t > 0):
-                    self.t = self.t-1
+                    self.t = self.t-1*self.options_vertex_model["ITERS_BETWEEN_PRINTS"]
                 else:
                     self.t = self.options_vertex_model["MAX_ITER"]
         self.leer_granos_t()
 
-
-
-    def imprimir_id_borde(self, xi, yi, id):         
+    def imprimir_id_borde(self, xi, yi, id, arc_len, t_ext=0, imprimir=0):   
         xi_aux = (xi, yi)
         font = pygame.font.Font('freesansbold.ttf', self.options_show_tam["FONT_SIZE_BORDER"])
-        line = font.render(id, True, self.options_show_color["BORDER_TEXT"], self.options_show_color["BORDER_BACK"])
-        size = line.get_size()
+        texto = str(id)
+        if(imprimir==1):
+            texto=f'arc: {arc_len}  t_ext: { t_ext }'
+        line = font.render(texto, True, self.options_show_color["BORDER_TEXT"], self.options_show_color["BORDER_BACK"])
         lineRect = line.get_rect()
         lineRect.center = xi_aux
         self.screen.blit(line, lineRect)
             
-
-
     def imprimir_grano(self, xi, yi, id, alpha):
         if(self.show_ids):
             xi_aux = (xi, yi)
@@ -344,8 +382,14 @@ class vertex_model_show:
             yf = yf*tan_alpha """
             pygame.draw.line(self.screen, self.options_show_color["ALPHA"], (xi, yi), (xf, yf), width=self.options_show_tam["ALPHA"])
             
-    def imprimir_borde(self, xi, xf):
-        pygame.draw.line(self.screen, self.options_show_color["COLOR_BORDER"], xi, xf, width=self.options_show_tam["BORDER"])
+    def imprimir_borde(self, xi, xf, t_ext_minor_to_delta_t):
+        if (t_ext_minor_to_delta_t == 0):            
+            pygame.draw.line(self.screen, self.options_show_color["COLOR_BORDER_0"], xi, xf, width=self.options_show_tam["BORDER"])
+        elif (t_ext_minor_to_delta_t == 1):
+            pygame.draw.line(self.screen, self.options_show_color["COLOR_BORDER_1"], xi, xf, width=self.options_show_tam["BORDER"])
+        else:
+            print("ERROR")
+            exit()
 
     def imprimir_vel_vertice(self, xi, yi, vx, vy):                
         xi_aux = (xi, yi)

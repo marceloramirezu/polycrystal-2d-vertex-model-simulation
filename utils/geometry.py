@@ -1,8 +1,13 @@
-from tkinter.tix import TCL_WINDOW_EVENTS
-from scipy.spatial import distance
 import math 
 import numpy as np
 
+
+def mag_vector(x, y):
+    p = max(abs(x), abs(y))
+    if(p == 0):
+        return 0
+    q = min(abs(x), abs(y))
+    return p * math.sqrt(1.0 + (q/p)*(q/p))
 
 
 def wrap_distances(vi, vf):
@@ -37,8 +42,18 @@ def wrap_distances(vi, vf):
         wrap = True
     else:
         pass
+    """ return vector2_mag(vector2_delta_to(ini, end, DOMAIN_BOUND)); """
     
-    arc_len = np.sqrt( np.power(dist_x, 2) + np.power(dist_y, 2) )
+    delta_x= (xf-xi)
+    delta_y= (yf-yi)
+    arc_len = mag_vector(delta_x, delta_y)
+    x_u = 0
+    y_u = 0
+    if(arc_len != 0):
+        angle = math.atan2(delta_y, delta_x)
+        x_u = math.cos(angle)
+        y_u = math.sin(angle)
+    
     dict_return = {
         "xi":[xi,yi],
         "xf":[xf,yf],
@@ -47,6 +62,8 @@ def wrap_distances(vi, vf):
         "dist_y":dist_y,
         "delta_x": (xf-xi),
         "delta_y": (yf-yi),
+        "x_u": (x_u),
+        "y_u": (y_u),
         "arc_len":arc_len
     }
     return dict_return
