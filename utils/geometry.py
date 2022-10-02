@@ -8,6 +8,7 @@ def mag_vector(x, y):
         return 0
     q = min(abs(x), abs(y))
     return p * math.sqrt(1.0 + (q/p)*(q/p))
+    #return math.sqrt((x*x)+(y*y))
 
 
 def wrap_distances(vi, vf):
@@ -23,26 +24,21 @@ def wrap_distances(vi, vf):
 
     if(x_dist_wrap and xi <= 0.5):
         xf = xf-1
-        dist_x = np.absolute(xf-xi)
         wrap = True
     elif(x_dist_wrap and xi > 0.5):
         xf = xf+1
-        dist_x = np.absolute(xf-xi)
         wrap = True
     else:
         pass
 
     if(y_dist_wrap and yi <= 0.5):
         yf = yf-1
-        dist_y = np.absolute(yf-yi)
         wrap = True
     elif(y_dist_wrap and yi > 0.5):
         yf = yf+1
-        dist_y = np.absolute(yf-yi)
         wrap = True
     else:
         pass
-    """ return vector2_mag(vector2_delta_to(ini, end, DOMAIN_BOUND)); """
     
     delta_x= (xf-xi)
     delta_y= (yf-yi)
@@ -58,10 +54,8 @@ def wrap_distances(vi, vf):
         "xi":[xi,yi],
         "xf":[xf,yf],
         "wrap":wrap,
-        "dist_x":dist_x,
-        "dist_y":dist_y,
-        "delta_x": (xf-xi),
-        "delta_y": (yf-yi),
+        "delta_x": delta_x,
+        "delta_y": delta_y,
         "x_u": (x_u),
         "y_u": (y_u),
         "arc_len":arc_len
@@ -69,12 +63,8 @@ def wrap_distances(vi, vf):
     return dict_return
 
 
+# angle in radians
 def rotate(origin, point, angle):
-    """
-    Rotate a point counterclockwise by a given angle around a given origin.
-
-    The angle should be given in radians.
-    """
     ox, oy = origin
     px, py = point
 
