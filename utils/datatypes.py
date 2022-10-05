@@ -10,8 +10,9 @@ dt_vertex = np.dtype([
     ('grains', np.int, (3,)), 
     ('energy', np.longdouble), 
     ('not_enabled', np.bool_),
-    ('advanced_t', np.longdouble), # si el borde no se extingue en la iteracion actual, siempre sera 0
-                                   # si el borde se extingue enla iteracion actual, sera el tiempo que avanza antes de llegar a actual_t + delta_t
+    ('ext_border', np.bool_), # FALTA IMPLEMENTAR, permite caclular posicion de vertices asociados a bordes o granos que colapsan por separado
+    ('advanced_t', np.longdouble), # (FALTA IMPLEMENTAR) si el borde no se extingue en la iteracion actual, siempre sera 0
+                                   # si el borde se extingue en la iteracion actual, sera el tiempo que avanza antes de llegar a actual_t + delta_t
                                    # usado para ver cuanto tiempo tienen que avanzar los bordes que se extinguen para llegar a actual_t + delta_t luego de haber avanzado localmente dentro del intervalo de tiempo de la iteracion actual      
 ])
 # (id, vertices, diff_vector, gamma, arc_len, energy, not_enabled)
@@ -24,11 +25,11 @@ dt_border = np.dtype([
     ('tangent_vector', np.longdouble, (2,)), 
     ('diff_vector', np.longdouble, (2,)), 
     ('gamma', np.longdouble), 
+    ('energy', np.longdouble), 
     ('arc_len', np.longdouble), 
     ('t_ext', np.longdouble), 
-    ('energy', np.longdouble), 
+    ('ext', np.int_),
     ('not_enabled', np.bool_), 
-    ('ext', np.int_)
 ])
 # (id, alpha, vertices)
 # (id, alpha, (x0, x1, ...,xn))

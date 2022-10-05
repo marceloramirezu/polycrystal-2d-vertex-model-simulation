@@ -177,11 +177,13 @@ class vertex_model_show:
                 y = i["pos_vector"][1]       
                 vx = i["vel_vector"][0]
                 vy = i["vel_vector"][1]
+                ext_border = i["ext_border"]
                 xi_aux = (x+ self.offsetx, y+ self.offsety)
                 xi_aux = self.adjust_offset(xi_aux)
                 xi_aux = (xi_aux[0]*self.aux_zoom, xi_aux[1]*self.aux_zoom)
                 if(self.show_vertices):
-                    self.imprimir_vertice(xi_aux[0], xi_aux[1], id)
+                    original_pos = [x, y]
+                    self.imprimir_vertice(xi_aux[0], xi_aux[1], id, original_pos, ext_border)
                 if(self.show_velocities):
                     self.imprimir_vel_vertice(xi_aux[0], xi_aux[1], vx*self.aux_zoom, vy*self.aux_zoom)
     
@@ -251,7 +253,8 @@ class vertex_model_show:
                 xi_aux = [sum_x, sum_y]
                 xi_aux = self.adjust_offset( xi_aux )                        
                 xi_aux = [xi_aux[0]*self.aux_zoom, xi_aux[1]*self.aux_zoom]
-                self.imprimir_grano(xi_aux, id_grain_aux, alpha, n_vertices)
+                original_pos = [sum_x/(cont_vertices), sum_y/(cont_vertices)  ]
+                self.imprimir_grano(xi_aux, id_grain_aux, alpha, n_vertices, original_pos)
             
     def read_zoom_offset(self, move_x, move_y, zoom, zoom_0):
         
@@ -344,10 +347,10 @@ class vertex_model_show:
         lineRect.center = xi_aux
         self.screen.blit(line, lineRect)
             
-    def imprimir_grano(self, xi_aux, id, alpha, n_vertices):
+    def imprimir_grano(self, xi_aux, id, alpha, n_vertices, original_pos):
         if(self.show_ids):
             font = pygame.font.Font('freesansbold.ttf', self.options_show_tam["FONT_SIZE_GRAIN"])
-            line = font.render(f"{id}", True, self.options_show_color["GRAIN_TEXT"], self.options_show_color["GRAIN_BACK"])
+            line = font.render(f"{id} pos:[{original_pos[0]}, {original_pos[1]}]", True, self.options_show_color["GRAIN_TEXT"], self.options_show_color["GRAIN_BACK"])
             size = line.get_size()
             lineRect = line.get_rect()
             lineRect.center = xi_aux
@@ -356,10 +359,6 @@ class vertex_model_show:
             xf = xi_aux[0] + self.options_show_tam["ALPHA_LEN"]
             yf = xi_aux[1] + self.options_show_tam["ALPHA_LEN"]
             xf, yf = rotate((xi_aux[0], xi_aux[1]), (xf, yf), alpha)
-            """ tan_alpha = np.tan(alpha)
-            tan_alpha = tan_alpha
-            xf = xf*tan_alpha
-            yf = yf*tan_alpha """
             if(n_vertices == 3):
                 pygame.draw.line(self.screen, self.options_show_color["ALPHA_3_SIDED"], xi_aux, (xf, yf), width=self.options_show_tam["ALPHA"])            
             else:
@@ -395,13 +394,16 @@ class vertex_model_show:
 
         pygame.draw.line(self.screen, color_aux, xi_aux, xf_aux, width=self.options_show_tam["VERTEX_VEL"])
 
-    def imprimir_vertice(self, xi, yi, id):
+    def imprimir_vertice(self, xi, yi, id, original_pos, ext_border):
         xi_aux = (xi, yi)
-        pygame.draw.circle(self.screen, self.options_show_color["COLOR_VERTEX"], xi_aux, self.options_show_tam["VERTEX"])   
+        if(ext_border):
+            pygame.draw.circle(self.screen, self.options_show_color["COLOR_VERTEX_1"], xi_aux, self.options_show_tam["VERTEX"])   
+        else:
+            pygame.draw.circle(self.screen, self.options_show_color["COLOR_VERTEX"], xi_aux, self.options_show_tam["VERTEX"])   
         
         if(self.show_ids):
             font = pygame.font.Font('freesansbold.ttf', self.options_show_tam["FONT_SIZE_VERTEX"])
-            text = f'{id}'
+            text = f'{id} pos:[{original_pos[0]}, {original_pos[1]}]'
             line = font.render(text, True, self.options_show_color["VERTEX_TEXT"], self.options_show_color["VERTEX_BACK"])        
             lineRect = line.get_rect()
             lineRect.center = xi_aux
