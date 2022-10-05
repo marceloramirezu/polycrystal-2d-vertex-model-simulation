@@ -1,0 +1,5 @@
+# ignore out files
+out
+
+# ignore voronoi out files
+utils/voronoi/salida
