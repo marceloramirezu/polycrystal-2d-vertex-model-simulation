@@ -2,4 +2,4 @@
 out
 
 # ignore voronoi out files
-utils/voronoi/salida
+#utils/voronoi/salida
