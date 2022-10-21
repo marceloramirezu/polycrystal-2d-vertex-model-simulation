@@ -54,12 +54,15 @@ def main():
     vxm.calculate_vel_vertices()                
     vxm.calculate_t_ext()                       
     vxm.ordenar_ext_borders()   
+    vxm.calculate_grain_position()
     # guardar estado inicial (t=0)
     vxm.save_actual_state()
     max_t = OPTIONS_VERTEX_MODEL["MAX_ITER"]
+    actual_per = 0
     while (vxm.actual_iter <= max_t):
-        if(vxm.actual_iter%100==0):
-            print(f"ITER: {vxm.actual_iter}")
+        if(vxm.actual_iter % (OPTIONS_VERTEX_MODEL["MAX_ITER"]/100) ==0):
+            print(f"Simulado: {actual_per}%, ITER: {vxm.actual_iter}")
+            actual_per+=1
                 
         # 2.- calcular vectores tangentes, largos de arco y energias
         vxm.calculate_len_and_energy_vertices()     
@@ -75,6 +78,8 @@ def main():
              
         # 6.- actualiza posición de vertices (actualiza vertices asociados a bordes que se extinguen en la iteracion actual por separado)
         vxm.update_position_vertices()           
+
+        vxm.calculate_grain_position()
 
         # 7.- actualiza iteracion y tiempo actual   
         vxm.next_iteration()               

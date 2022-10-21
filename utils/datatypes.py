@@ -37,10 +37,13 @@ dt_border = np.dtype([
 dt_grain = np.dtype([
     ('id', np.uint), 
     ('alpha', np.longdouble), 
+    ('pos_vector', np.longdouble, (2,)), 
     ('vertices', np.int, (50,)),
     ('n_vertices', np.uint), 
     ('3_sided', np.int), 
     ('not_enabled', np.bool_), 
+    ('x_wrap', np.bool_), 
+    ('y_wrap', np.bool_), 
 ])
 
 dt_ext_border = np.dtype([

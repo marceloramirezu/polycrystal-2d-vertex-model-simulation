@@ -5,7 +5,10 @@ from options import *
 from utils.geometry import *
 import pygame
 import time
+from pygame.locals import *
 
+from OpenGL.GL import *
+from OpenGL.GLU import *
 
 def events_pygame(list_states):
     keys = pygame.key.get_pressed()
@@ -195,7 +198,9 @@ def events_pygame(list_states):
 def main():    
     
     pygame.init()
-    screen = pygame.display.set_mode([OPTIONS_SHOW["RESOLUTION"], OPTIONS_SHOW["RESOLUTION"]]) 
+    windowSize = [OPTIONS_SHOW["RESOLUTION_X"], OPTIONS_SHOW["RESOLUTION_Y"]]
+    #screen = pygame.display.set_mode(windowSize, pygame.FULLSCREEN) 
+    screen = pygame.display.set_mode(windowSize) 
     vxm_show = vertex_model_show(screen, OPTIONS_VERTEX_MODEL, OPTIONS_SHOW, OPTIONS_SHOW_COLOR, OPTIONS_SHOW_TAM)
 
     pygame.display.set_caption('POLICRISTALES')
@@ -222,7 +227,7 @@ def main():
         "show_vertices": True,
         "show_borders": True,
         "show_velocities": False,
-        "show_alpha": False,
+        "show_alpha": True,
         "show_ids": False,
         "show_t_ext": False,
         "show_options": False,

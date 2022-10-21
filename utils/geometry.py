@@ -71,3 +71,27 @@ def rotate(origin, point, angle):
     qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
     qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
     return qx, qy
+
+def rotate_segment(p1, p2, angule):
+    t_wrap = wrap_distances(p1, p2)
+    if(not t_wrap["wrap"]):
+        p_central_x = (p1[0]+ p2[0])/2
+        p_central_y = (p1[1]+ p2[1])/2
+        p_central = [p_central_x, p_central_y]
+        p1f = rotate(p_central, p1, angule)
+        p2f = rotate(p_central, p2, angule)
+        return [p1f, p2f]
+    else:
+        p2_wrap = t_wrap["xf"]
+        p_central_x_1 = p1[0]+ p2_wrap[0]
+        p_central_y_1 = p1[1]+ p2_wrap[1]
+        p_central_1 = [p_central_x_1, p_central_y_1]
+        p1f = rotate(p_central_1, p1, angule)
+        
+        t_wrap_2 = wrap_distances(p2, p1)
+        p1_wrap = t_wrap_2["xf"]        
+        p_central_x_2 = (p1_wrap[0]+ p2[0])/2
+        p_central_y_2 = (p1_wrap[1]+ p2[1])/2
+        p_central_2 = [p_central_x_2, p_central_y_2]
+        p2f = rotate(p_central_2, p2, angule)
+        return [p1f, p2f]
