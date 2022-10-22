@@ -40,6 +40,16 @@ def wrap_distances(vi, vf):
     else:
         pass
     
+    dist_x = 0
+    dist_y = 0
+    if(xf < xi):
+        dist_x = xi-xf
+    else:
+        dist_x = xf-xi
+    if(yf < yi):
+        dist_y = yi-yf
+    else:
+        dist_y = yf-yi
     delta_x= (xf-xi)
     delta_y= (yf-yi)
     arc_len = mag_vector(delta_x, delta_y)
@@ -56,6 +66,8 @@ def wrap_distances(vi, vf):
         "wrap":wrap,
         "delta_x": delta_x,
         "delta_y": delta_y,
+        "dist_x": dist_x,
+        "dist_y": dist_y,
         "x_u": (x_u),
         "y_u": (y_u),
         "arc_len":arc_len

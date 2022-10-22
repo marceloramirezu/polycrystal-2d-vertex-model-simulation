@@ -51,6 +51,59 @@ def events_pygame(list_states):
                 list_states["show_ids"] = True                
             list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
             list_states["changes"] = True
+
+    if keys[pygame.K_F2]:
+        if(list_states["move_ticker"] == 0):        
+            if(list_states["show_ids_vertices"]):
+                list_states["show_ids_vertices"] = False   
+            else:
+                list_states["show_ids_vertices"] = True                
+            list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+            list_states["changes"] = True
+        
+        
+    if keys[pygame.K_F3]:
+        if(list_states["move_ticker"] == 0):        
+            if(list_states["show_ids_grains"]):
+                list_states["show_ids_grains"] = False   
+            else:
+                list_states["show_ids_grains"] = True                
+            list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+            list_states["changes"] = True
+    if keys[pygame.K_F4]:
+        if(list_states["move_ticker"] == 0):        
+            if(list_states["show_ids_borders"]):
+                list_states["show_ids_borders"] = False   
+            else:
+                list_states["show_ids_borders"] = True                
+            list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+            list_states["changes"] = True
+
+    if keys[pygame.K_F5]:
+        if(list_states["move_ticker"] == 0):        
+            if(list_states["show_info_vertices"]):
+                list_states["show_info_vertices"] = False   
+            else:
+                list_states["show_info_vertices"] = True                
+            list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+            list_states["changes"] = True
+    if keys[pygame.K_F6]:
+        if(list_states["move_ticker"] == 0):        
+            if(list_states["show_info_grains"]):
+                list_states["show_info_grains"] = False   
+            else:
+                list_states["show_info_grains"] = True                
+            list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+            list_states["changes"] = True
+    if keys[pygame.K_F7]:
+        if(list_states["move_ticker"] == 0):        
+            if(list_states["show_info_borders"]):
+                list_states["show_info_borders"] = False   
+            else:
+                list_states["show_info_borders"] = True                
+            list_states["move_ticker"] = OPTIONS_SHOW["TICKS_WAIT_INPUT"]
+            list_states["changes"] = True
+
     if keys[pygame.K_t]:
         if(list_states["move_ticker"] == 0):        
             if(list_states["show_t_ext"]):
@@ -229,6 +282,12 @@ def main():
         "show_velocities": False,
         "show_alpha": True,
         "show_ids": False,
+        "show_ids_vertices": True,
+        "show_ids_grains": True,
+        "show_ids_borders": True,
+        "show_info_vertices": False,
+        "show_info_grains": False,
+        "show_info_borders": False,
         "show_t_ext": False,
         "show_options": False,
         "start": False,

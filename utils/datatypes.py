@@ -8,6 +8,7 @@ dt_vertex = np.dtype([
     ('vel_vector', np.longdouble, (2,)), 
     ('borders', np.uint, (3,)), 
     ('grains', np.int, (3,)), 
+    ('grains_angle', np.longdouble, (3,)), 
     ('energy', np.longdouble), 
     ('not_enabled', np.bool_),
     ('ext_border', np.bool_), # FALTA IMPLEMENTAR, permite caclular posicion de vertices asociados a bordes o granos que colapsan por separado

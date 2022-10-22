@@ -46,9 +46,6 @@ def main():
     st = time.time()
 
 
-    # 1.- calcular cantidad de vertices en cada grano
-    vxm.update_cant_vertices_in_grains()     
-
     # ciclo principal
     vxm.calculate_len_and_energy_vertices()     
     vxm.calculate_vel_vertices()                
