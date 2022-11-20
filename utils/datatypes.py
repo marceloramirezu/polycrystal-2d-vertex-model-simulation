@@ -21,8 +21,7 @@ dt_vertex = np.dtype([
 # vertices: contiene los indices de los vertices guardados en self.vertices
 dt_border = np.dtype([
     ('id', np.uint), 
-    ('vertices', np.uint, (2,)), 
-    ('grains', np.int, (2,)), 
+    ('vertices', np.uint, (2,)),
     ('tangent_vector', np.longdouble, (2,)), 
     ('diff_vector', np.longdouble, (2,)), 
     ('gamma', np.longdouble), 

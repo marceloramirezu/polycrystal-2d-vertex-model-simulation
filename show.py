@@ -325,11 +325,11 @@ def main():
             if(list_states_new["next"]):
                 plus_iters = 1                
             elif(list_states_new["next_x2"]):                
-                plus_iters = OPTIONS_SHOW["FPS"]
+                plus_iters = OPTIONS_SHOW["FPS_X2"]
             elif(list_states_new["prev"]):
                 plus_iters = -1
             elif(list_states_new["prev_x2"]):
-                plus_iters = -OPTIONS_SHOW["FPS"]
+                plus_iters = -OPTIONS_SHOW["FPS_X2"]
             else:
                 pass
         

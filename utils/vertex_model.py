@@ -417,7 +417,7 @@ class vertex_model:
         #print("VERTICES ON GRAIN POST")
 
         # 3.2.- granos en vertices -----------------------------------------------------------
-        print("GRAIN ON VERTICES START")
+        #print("GRAIN ON VERTICES START")
         v1_grains_id = [self.grains[v1_grains[0]]["id"], self.grains[v1_grains[1]]["id"], self.grains[v1_grains[2]]["id"]]
         v2_grains_id = [self.grains[v2_grains[0]]["id"], self.grains[v2_grains[1]]["id"], self.grains[v2_grains[2]]["id"]]
         print(f"V1 GRAINS: {v1_grains_id}")
@@ -434,7 +434,7 @@ class vertex_model:
             if mantiene_solo_v2_two_vertices_grain == v2_grains_id[i]:
                 pos_grain_mantiene_solo_v2 = i
         
-        pre_pos_grain_mantiene_solo_v1 = (pos_grain_mantiene_solo_v1+1)%3
+        pre_pos_grain_mantiene_solo_v1 = (pos_grain_mantiene_solo_v1-1)%3
         pre_pos_grain_mantiene_solo_v2 = (pos_grain_mantiene_solo_v2+1)%3
         print(f"pre_pos_v1: {pre_pos_grain_mantiene_solo_v1}")
         print(f"pre_pos_v2: {pre_pos_grain_mantiene_solo_v2}")
@@ -444,29 +444,29 @@ class vertex_model:
         print(f"pre_v1: {pre_grain_mantiene_solo_v1}")
         print(f"pre_v2: {pre_grain_mantiene_solo_v2}")
         
+        self.vertices[vertice_1]["grains"][0] = mantiene_solo_v2_two_vertices_grain
+        self.vertices[vertice_1]["grains"][1] = pre_grain_mantiene_solo_v2
+        self.vertices[vertice_1]["grains"][2] = pre_grain_mantiene_solo_v1
         
         self.vertices[vertice_2]["grains"][0] = mantiene_solo_v1_two_vertices_grain
         self.vertices[vertice_2]["grains"][1] = pre_grain_mantiene_solo_v1
         self.vertices[vertice_2]["grains"][2] = pre_grain_mantiene_solo_v2
 
         
-        self.vertices[vertice_1]["grains"][0] = mantiene_solo_v2_two_vertices_grain
-        self.vertices[vertice_1]["grains"][1] = pre_grain_mantiene_solo_v2
-        self.vertices[vertice_1]["grains"][2] = pre_grain_mantiene_solo_v1
         print("GRAIN ON VERTICES POST")
         print(f"V1 GRAINS: ({v1_grains[0]}, {v1_grains[1]}, {v1_grains[2]})")
-        print(f"V2 GRAINS: ({v2_grains[0]}, {v2_grains[1]}, {v2_grains[2]})")
+        print(f"V2 GRAINS: ({v2_grains[0]}, {v2_grains[1]}, {v2_grains[2]})\n")
         
         """  """        
 
         
     def add_vertex_on_grain(self, grain, add_vertex, pos):
-        print(f"add_vertex_on_grain: (grain: {grain}), (add_vertex: {add_vertex}), (pos: {pos})")
+        #print(f"add_vertex_on_grain: (grain: {grain}), (add_vertex: {add_vertex}), (pos: {pos})")
         n_vertices = self.grains[grain]["n_vertices"]
         vertices = self.grains[grain]["vertices"]
-        print(f"initial vertices: {self.grains[grain]['vertices'][0:(n_vertices+5)]}")
+        #print(f"initial vertices: {self.grains[grain]['vertices'][0:(n_vertices+5)]}")
         post_vertices = list(vertices[pos:n_vertices])
-        print(f"post_vertices: {post_vertices}")
+        #print(f"post_vertices: {post_vertices}")
         self.grains[grain]["vertices"][pos] = add_vertex
         cont = 0
         for post_v in post_vertices:
@@ -476,7 +476,7 @@ class vertex_model:
             else:
                 break
         self.grains[grain]["n_vertices"] = n_vertices+1
-        print(f"final vertices: {self.grains[grain]['vertices'][0:n_vertices+5]}\n")
+        #print(f"final vertices: {self.grains[grain]['vertices'][0:n_vertices+5]}\n")
     
     """ ================== TRANSICION DELETE 3-SIDED GRAIN ================================================================================= """
     # Transicion Topologica borrar grano
@@ -672,6 +672,11 @@ class vertex_model:
 
     def test_structure(self):
         # granos = 3 bordes = 2 vertices
+        for g in self.grains:
+            # revisar que sus 3 bordes esten activos
+            # revisar que sus n vertices esten activos
+            
+            pass
         # vertice = 3 bordes habilitados = 3 granos habilitados
         # grano = n_vertices habilitados
         # borde = 2 vertices habilitados = 2 granos habilitados
@@ -846,9 +851,6 @@ class vertex_model:
         for i in range(0, self.n_grains):
             for j in range(0, 50):
                 self.grains[i]["vertices"][j] = -1
-        for i in range(self.n_borders):
-                self.borders[i]["grains"][0] = -1
-                self.borders[i]["grains"][1] = -1
 
         # GRAINS --------------------------------------------------------
         considerated = np.full(self.n_vertices*3, False)
@@ -925,7 +927,7 @@ class vertex_model:
         self.update_cant_vertices_in_grains()     
         self.calculate_grain_position()
 
-        self.vertex_set_grains_clockwise()
+        self.all_vertex_set_grains_clockwise()
         self.grain_set_vertex_clockwise()
 
     def grain_set_vertex_clockwise(self):
@@ -936,39 +938,42 @@ class vertex_model:
             for i in range(0, n_vertices):
                 self.grains[g_index]["vertices"][i] = vertices[i]
 
-    def vertex_set_grains_clockwise(self):
+    def all_vertex_set_grains_clockwise(self):
         for v_index in range(0, self.n_vertices):
-            print(f"\n SET GRAINS CLOCKWISE ON VERTEX ({v_index})")
-            pos = self.vertices[v_index]["pos_vector"]
-            grains = list(self.vertices[v_index]["grains"])
-            angle_grains = []
-            for g in range(0, 3):
-                grain = self.grains[grains[g]]
-                t_wrap = wrap_distances(pos, grain["pos_vector"])
-                delta_x = t_wrap["delta_x"]
-                delta_y = t_wrap["delta_y"]
-                theta_radians = math.atan2(delta_y, delta_x)
-                angle_grains.append(theta_radians)
+            self.vertex_set_grains_clockwise(v_index)
 
-            print(f"angle_grains: {angle_grains}")
-            max_angle = max(angle_grains)
-            max_pos = angle_grains.index(max_angle)
-            min_angle = min(angle_grains)
-            min_pos = angle_grains.index(min_angle)
-            pos_max_min = [max_pos, min_pos]
-            middle_pos = 0
-            for i in range(0, 3):
-                if i not in pos_max_min:
-                    middle_pos = i
-            self.vertices[v_index]["grains"][2] = grains[2]
-            self.vertices[v_index]["grains"][1] = grains[1]
-            self.vertices[v_index]["grains"][0] = grains[0]
+    def vertex_set_grains_clockwise(self, v_index):
+        pos = self.vertices[v_index]["pos_vector"]
+        if (pos[0]>=0.05 and pos[0] < 0.95):
+            if (pos[1]>=0.05 and pos[1] < 0.95):
+                grains = list(self.vertices[v_index]["grains"])
+                angle_grains = []
+                for g in range(0, 3):
+                    grain = self.grains[grains[g]]
+                    t_wrap = wrap_distances(pos, grain["pos_vector"])
+                    delta_x = t_wrap["delta_x"]
+                    delta_y = t_wrap["delta_y"]
+                    theta_radians = math.atan2(delta_y, delta_x)
+                    angle_grains.append(theta_radians)
+
+                #print(f"angle_grains: {angle_grains}")
+                max_angle = max(angle_grains)
+                max_pos = angle_grains.index(max_angle)
+                min_angle = min(angle_grains)
+                min_pos = angle_grains.index(min_angle)
+                pos_max_min = [max_pos, min_pos]
+                middle_pos = 0
+                for i in range(0, 3):
+                    if i not in pos_max_min:
+                        middle_pos = i
+                self.vertices[v_index]["grains"][0] = grains[min_pos]
+                self.vertices[v_index]["grains"][1] = grains[middle_pos]
+                self.vertices[v_index]["grains"][2] = grains[max_pos]
+                
+                self.vertices[v_index]["grains_angle"][0] = angle_grains[min_pos]
+                self.vertices[v_index]["grains_angle"][1] = angle_grains[middle_pos]
+                self.vertices[v_index]["grains_angle"][2] = angle_grains[max_pos]
             
-            self.vertices[v_index]["grains_angle"][2] = angle_grains[2]
-            self.vertices[v_index]["grains_angle"][1] = angle_grains[1]
-            self.vertices[v_index]["grains_angle"][0] = angle_grains[0]
-
-
                 
     # actualiza la cantidad de vertices de cada grano
     # utilizado solo al inicio, luego las transiciones se ocupan de actualizar la cantidad de vertices

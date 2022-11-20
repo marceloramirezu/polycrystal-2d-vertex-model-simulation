@@ -118,6 +118,7 @@ class vertex_model_show:
                 f"grand_eps: {self.options_vertex_model['GRAND_EPS']}",
             ],
             [
+                f"actual t: {self.t*self.options_vertex_model['DELTA_T']}",
                 f"iter: {self.t} ({self.multi_iter} iter x frame)",
                 #f"t: {round(self.t*self.options_vertex_model['DELTA_T'], self.n_zeros_delta_t)}",
                 f"zoom: {self.zoom}x",
@@ -380,8 +381,6 @@ class vertex_model_show:
                 arc_len = i["arc_len"]
                 t_ext = i["t_ext"]
                 t_ext_minor_to_delta_t = i["ext"]
-                g0 = i["grains"][0]
-                g1 = i["grains"][1]
                 xi = self.vertices[xi_index]
                 xf = self.vertices[xf_index]
 
@@ -572,21 +571,9 @@ class vertex_model_show:
                 size2 = line2.get_size()
                 
                 xi_aux3 = (xi_aux2[0], xi_aux2[1]+size2[1]+1)
-
-                angulos = [self.vertices[id]["grains_angle"][0], self.vertices[id]["grains_angle"][1], self.vertices[id]["grains_angle"][2]]
-                angulos = [str(math.degrees(angulos[0]))[0:5], str(math.degrees(angulos[1]))[0:5], str(math.degrees(angulos[2]))[0:5]]
-                
-                text3 = f'g_alpha:[{angulos[0]}, {angulos[1]}, {angulos[2]}]'
-                line3 = font.render(text3, True, self.options_show_color["VERTEX_TEXT"], self.options_show_color["VERTEX_BACK"])        
-                lineRect3 = line3.get_rect()
-                lineRect3.center = xi_aux3
-                self.screen.blit(line3, lineRect3)
-                size3 = line3.get_size()
-                
-                xi_aux4 = (xi_aux3[0], xi_aux3[1]+size3[1]+1)
                 text4 = f'b:[{self.vertices[id]["borders"][0]}, {self.vertices[id]["borders"][1]}, {self.vertices[id]["borders"][2]}]'
                 line4 = font.render(text4, True, self.options_show_color["VERTEX_TEXT"], self.options_show_color["VERTEX_BACK"])        
                 lineRect4 = line4.get_rect()
-                lineRect4.center = xi_aux4
+                lineRect4.center = xi_aux3
                 self.screen.blit(line4, lineRect4)
     
