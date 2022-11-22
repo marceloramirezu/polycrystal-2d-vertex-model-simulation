@@ -98,8 +98,10 @@ def main():
     elapsed_time = et - st
     print(f"FIN ITER: {vxm.actual_iter-1}\n")
     print('Execution time:', elapsed_time, 'seconds')
-    print(f"\n\nERRORES EN ESTRUCTURA: {len(l_errors)}")
-    print(l_errors)
+    
+    if(OPTIONS_VERTEX_MODEL["TEST"]):
+        print(f"\n\nERRORES EN ESTRUCTURA: {len(l_errors)}")
+        print(l_errors)
         
 if __name__ == '__main__':
     main()

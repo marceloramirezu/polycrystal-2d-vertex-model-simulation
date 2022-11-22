@@ -6,21 +6,19 @@ SIMULATION OPTIONS
 
 # 1.- VORONOI ----------------------------------------------------------------------------------
 GENERATE_VORONOI=True
-SEED_VORONOI=12
+SEED_VORONOI=12           # voronoi seed
 DIST_VORONOI=-1
 VORONOI_OUT_FOLDER="utils/voronoi/salida"
 
 
 # 2.- SIMULATION OPTIONS ----------------------------------------------------------------------
-TEST = False
+TEST = False              # test structure 
 ITERS_BETWEEN_PRINTS =  1 # timesteps between saves
-MAX_ITER = 10000 # max timesteps
-INITIAL_N = 3000 # number of grains
-MIN_GRAINS = 50 # min number of grains
+MAX_ITER = 10000          # max timesteps
+INITIAL_N = 3000          # number of grains
+MIN_GRAINS = 50           # min number of grains
 GAMMA_0 = 1 
 DELTA_T = 1e-4  
-# MOV_VERTEX = 1 # vertex movility # not used 
-# GRAND_EPS = 1e-8 # not used 
 
 
 
@@ -55,15 +53,15 @@ FONT_SIZE_BORDER = FONT_SIZE_GRAIN
 FONT_SIZE_VERTEX = FONT_SIZE_GRAIN
 
 
-""" DICTIONARIES """
-
+""" ============================================================== DICTIONARIES ============================================================== """
 OPTIONS_VORONOI = {
     "GENERATE_VORONOI": GENERATE_VORONOI,
     "SEED_VORONOI": SEED_VORONOI,
     "DIST_VORONOI": DIST_VORONOI,
     "VORONOI_OUT_FOLDER": VORONOI_OUT_FOLDER
 }
-
+# MOV_VERTEX = 1 # vertex movility # not used 
+# GRAND_EPS = 1e-8 # not used 
 OPTIONS_VERTEX_MODEL = {
     "TEST": TEST,
     "ITERS_BETWEEN_PRINTS": ITERS_BETWEEN_PRINTS,
@@ -76,8 +74,6 @@ OPTIONS_VERTEX_MODEL = {
     #"MOV_VERTEX": MOV_VERTEX,
     #"GRAND_EPS": GRAND_EPS,
 }
-
-
 OPTIONS_SHOW = {
     "RESOLUTION": RESOLUTION,
     "RESOLUTION_X": RESOLUTION_X,
@@ -86,7 +82,6 @@ OPTIONS_SHOW = {
     "FPS_X2": FPS_X2,
     "TICKS_WAIT_INPUT":TICKS_WAIT_INPUT,
 }
-
 OPTIONS_SHOW_COLOR = {
     "COLOR_VERTEX":COLOR_VERTEX,
     "COLOR_VERTEX_1":COLOR_VERTEX_1,
@@ -108,7 +103,6 @@ OPTIONS_SHOW_COLOR = {
     "TEXT": (255, 255, 255),
     "BACK_TEXT": (0, 0, 0),
 }
-
 OPTIONS_SHOW_TAM = {
     "VERTEX_SIZE": VERTEX_SIZE,
     "VERTEX_VEL_SIZE": VERTEX_VEL_SIZE,
