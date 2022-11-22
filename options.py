@@ -14,7 +14,7 @@ VORONOI_OUT_FOLDER="utils/voronoi/salida"
 # 2.- SIMULATION OPTIONS ----------------------------------------------------------------------
 TEST = False              # test structure 
 ITERS_BETWEEN_PRINTS =  1 # timesteps between saves
-MAX_ITER = 10000          # max timesteps
+MAX_ITER = 1000           # max timesteps
 INITIAL_N = 3000          # number of grains
 MIN_GRAINS = 50           # min number of grains
 GAMMA_0 = 1 
@@ -51,6 +51,9 @@ BORDER_SIZE=5
 FONT_SIZE_GRAIN = 9
 FONT_SIZE_BORDER = FONT_SIZE_GRAIN
 FONT_SIZE_VERTEX = FONT_SIZE_GRAIN
+
+
+
 
 
 """ ============================================================== DICTIONARIES ============================================================== """
