@@ -115,7 +115,6 @@ class vertex_model_show:
             [
                 f"delta_t: {self.options_vertex_model['DELTA_T']}",
                 f"gamma_0: {self.options_vertex_model['GAMMA_0']}",
-                f"grand_eps: {self.options_vertex_model['GRAND_EPS']}",
             ],
             [
                 f"actual t: {self.t*self.options_vertex_model['DELTA_T']}",
@@ -474,9 +473,9 @@ class vertex_model_show:
             yf = xi_aux[1] + self.options_show_tam["ALPHA_LEN"]
             xf, yf = rotate((xi_aux[0], xi_aux[1]), (xf, yf), alpha)
             if(n_vertices == 3):
-                pygame.draw.line(self.screen, self.options_show_color["ALPHA_3_SIDED"], xi_aux, (xf, yf), width=self.options_show_tam["ALPHA"])            
+                pygame.draw.line(self.screen, self.options_show_color["ALPHA_3_SIDED"], xi_aux, (xf, yf), width=self.options_show_tam["ALPHA_SIZE"])            
             else:
-                pygame.draw.line(self.screen, self.options_show_color["ALPHA"], xi_aux, (xf, yf), width=self.options_show_tam["ALPHA"])
+                pygame.draw.line(self.screen, self.options_show_color["ALPHA"], xi_aux, (xf, yf), width=self.options_show_tam["ALPHA_SIZE"])
                 
         if(self.show_ids and self.show_ids_grains):
             font = pygame.font.Font('freesansbold.ttf', self.options_show_tam["FONT_SIZE_GRAIN"])
@@ -513,9 +512,9 @@ class vertex_model_show:
             
     def imprimir_borde(self, xi, xf, t_ext_minor_to_delta_t):
         if (t_ext_minor_to_delta_t == 0):            
-            pygame.draw.line(self.screen, self.options_show_color["COLOR_BORDER_0"], xi, xf, width=self.options_show_tam["BORDER"])
+            pygame.draw.line(self.screen, self.options_show_color["COLOR_BORDER_0"], xi, xf, width=self.options_show_tam["BORDER_SIZE"])
         elif (t_ext_minor_to_delta_t == 1):
-            pygame.draw.line(self.screen, self.options_show_color["COLOR_BORDER_1"], xi, xf, width=self.options_show_tam["BORDER"])
+            pygame.draw.line(self.screen, self.options_show_color["COLOR_BORDER_1"], xi, xf, width=self.options_show_tam["BORDER_SIZE"])
         else:
             print("ERROR")
             exit()
@@ -544,9 +543,9 @@ class vertex_model_show:
     def imprimir_vertice(self, xi, yi, id, original_pos, ext_border):
         xi_aux = (xi, yi)
         if(ext_border):
-            pygame.draw.circle(self.screen, self.options_show_color["COLOR_VERTEX_1"], xi_aux, self.options_show_tam["VERTEX"])   
+            pygame.draw.circle(self.screen, self.options_show_color["COLOR_VERTEX_1"], xi_aux, self.options_show_tam["VERTEX_SIZE"])   
         else:
-            pygame.draw.circle(self.screen, self.options_show_color["COLOR_VERTEX"], xi_aux, self.options_show_tam["VERTEX"])   
+            pygame.draw.circle(self.screen, self.options_show_color["COLOR_VERTEX"], xi_aux, self.options_show_tam["VERTEX_SIZE"])   
         
         if(self.show_ids and self.show_ids_vertices):
             font = pygame.font.Font('freesansbold.ttf', self.options_show_tam["FONT_SIZE_VERTEX"])
