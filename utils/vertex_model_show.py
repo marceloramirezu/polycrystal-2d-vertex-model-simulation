@@ -403,18 +403,15 @@ class vertex_model_show:
                         xi_wrap2_aux = (t_wrap2["xi"][0]*self.aux_zoom, t_wrap2["xi"][1]*self.aux_zoom)
                         xf_wrap2_aux = (t_wrap2["xf"][0]*self.aux_zoom, t_wrap2["xf"][1]*self.aux_zoom)
                         
-                        self.imprimir_borde( xi_wrap2_aux, xf_wrap2_aux, t_ext_minor_to_delta_t)          
-                        #sum_x1 = x_xi+x_xf
-                        #sum_y1 = y_xi+y_xf
-                        #self.imprimir_id_borde( (sum_x2/2), (sum_y2/2), id) 
+                        self.imprimir_borde( xi_wrap2_aux, xf_wrap2_aux, t_ext_minor_to_delta_t)        
                                 
                     self.imprimir_borde( xi_wrap_aux, xf_wrap_aux, t_ext_minor_to_delta_t)
                     if(not wrap):    
                         if(self.show_ids and self.show_ids_borders):
                             if(self.show_t_ext):
-                                self.imprimir_id_borde(sum_x1, sum_y1, id, arc_len, t_ext, imprimir=1)
+                                self.imprimir_id_borde(sum_x1, sum_y1, id, arc_len, xi_index, xf_index, t_ext, imprimir=1)
                             else:
-                                self.imprimir_id_borde(sum_x1, sum_y1, id, arc_len, t_ext, imprimir=0)
+                                self.imprimir_id_borde(sum_x1, sum_y1, id, arc_len, xi_index, xf_index, t_ext, imprimir=0)
                 
     def imprimir_granos(self):
         self.n_grains_actual = 0
@@ -448,7 +445,7 @@ class vertex_model_show:
 
     # IMPRIMIR POR PANTALLA (BASICAS) ===================================================================================================
 
-    def imprimir_id_borde(self, xi, yi, id, arc_len, t_ext=0, imprimir=0):   
+    def imprimir_id_borde(self, xi, yi, id, arc_len, vi, vf, t_ext=0, imprimir=0):   
         xi_aux = (xi, yi)
         font = pygame.font.Font('freesansbold.ttf', self.options_show_tam["FONT_SIZE_BORDER"])
         if(not self.show_info_borders):
@@ -465,7 +462,7 @@ class vertex_model_show:
             self.screen.blit(line, lineRect)
             size = line.get_size()
             xi_aux2 = [xi, yi+size[1]+2]
-            texto2=f'arc: {arc_len}  t_ext: { t_ext }'
+            texto2=f'{vi}, {vf}'
             line2 = font.render(texto2, True, self.options_show_color["BORDER_TEXT"], self.options_show_color["BORDER_BACK"])
             lineRect2 = line2.get_rect()
             lineRect2.center = xi_aux2

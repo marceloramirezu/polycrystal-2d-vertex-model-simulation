@@ -1,13 +1,13 @@
 # polycrystal-2d-vertex-model-simulation
 
-# instalar librerias
+# Install required libraries
 pip install requirements.txt
 
-# archivo configuracion
+# Options file
 options.py
 
-# realizar simulación y generar archivos
+# run simulation and generate files
 py main.py 
 
-# visualizar simulación
+# run visualization 
 py show.py

@@ -1,14 +1,14 @@
 
-from ast import For
+#from ast import For
 from utils.vertex_model_show import vertex_model_show
 from options import *
 from utils.geometry import *
 import pygame
-import time
+#import time
 from pygame.locals import *
 
-from OpenGL.GL import *
-from OpenGL.GLU import *
+#from OpenGL.GL import *
+#from OpenGL.GLU import *
 
 def events_pygame(list_states):
     keys = pygame.key.get_pressed()

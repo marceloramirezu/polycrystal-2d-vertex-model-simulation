@@ -31,6 +31,7 @@ dt_border = np.dtype([
     ('ext', np.int_),
     ('not_enabled', np.bool_), 
 ])
+
 # (id, alpha, vertices)
 # (id, alpha, (x0, x1, ...,xn))
 # vertices: contiene los indices de los vertices guardados en self.vertices
@@ -50,4 +51,17 @@ dt_ext_border = np.dtype([
     ('id', np.uint), 
     ('t_ext', np.longdouble),
     ('diff_t_ext', np.longdouble),
+])
+
+
+dt_general = np.dtype([
+    ('t', np.longdouble), 
+    ('iter', np.longdouble), 
+    ('n_vertices', np.uint),
+    ('n_borders', np.uint),
+    ('n_grains', np.uint),
+    ('energy', np.longdouble),
+    ('flip', np.bool_),
+    ('remove', np.bool_),
+    ('error', np.bool_),
 ])

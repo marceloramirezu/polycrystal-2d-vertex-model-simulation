@@ -1,54 +1,39 @@
-# VORONOI
+""" 
+------------------------------------------------------------------------------------------------
+SIMULATION OPTIONS
+------------------------------------------------------------------------------------------------
+"""
+
+# 1.- VORONOI ----------------------------------------------------------------------------------
 GENERATE_VORONOI=True
 SEED_VORONOI=12
 DIST_VORONOI=-1
 VORONOI_OUT_FOLDER="utils/voronoi/salida"
-OPTIONS_VORONOI = {
-    "GENERATE_VORONOI": GENERATE_VORONOI,
-    "SEED_VORONOI": SEED_VORONOI,
-    "DIST_VORONOI": DIST_VORONOI,
-    "VORONOI_OUT_FOLDER": VORONOI_OUT_FOLDER
-}
 
 
-# 30 fps * 10 seg = 300 iters
-# VERTEX MODEL
-# 3 min: 600 N, 1000 iters
-# 50 seg 200 N, 1000 iters
-# out_1: 1500, 200 iters
-INITIAL_N = 60
-INITIAL_N= 500
-INITIAL_N= 100
-ITERS_BETWEEN_PRINTS =  1
-MAX_ITER = 10000
-MAX_ITER = 1588
-MIN_GRAINS = 50
-GAMMA_0 = 1
-MOV_VERTEX = 1
-DELTA_T = 1e-4   # 0.1 ms
-GRAND_EPS = 1e-8 # 10 nm
-OPTIONS_VERTEX_MODEL = {
-    "ITERS_BETWEEN_PRINTS": ITERS_BETWEEN_PRINTS,
-    "MAX_ITER": MAX_ITER,
-    "MIN_GRAINS": MIN_GRAINS,
-    "GAMMA_0": GAMMA_0,
-    "MOV_VERTEX": MOV_VERTEX,
-    "INITIAL_N": INITIAL_N,
-    "DELTA_T": DELTA_T,
-    "GRAND_EPS": GRAND_EPS,
-    "VORONOI_OUT_FOLDER": VORONOI_OUT_FOLDER
-}
+# 2.- SIMULATION OPTIONS ----------------------------------------------------------------------
+TEST = False
+ITERS_BETWEEN_PRINTS =  1 # timesteps between saves
+MAX_ITER = 10000 # max timesteps
+INITIAL_N = 3000 # number of grains
+MIN_GRAINS = 50 # min number of grains
+GAMMA_0 = 1 
+DELTA_T = 1e-4  
+# MOV_VERTEX = 1 # vertex movility # not used 
+# GRAND_EPS = 1e-8 # not used 
 
 
-# PYGAME AND COLORS
+
+""" ------------------------------------------------------------------------------------------------
+VISUALIZATION OPTIONS
+------------------------------------------------------------------------------------------------ """
+# 3.- PYGAME AND COLORS
 FPS = 60
-FPS_X2 = 10
-RESOLUTION = 600
-RESOLUTION_X = 600
-RESOLUTION_Y = 600
-
-TICKS_WAIT_INPUT = 5
-
+FPS_X2 = 60
+RESOLUTION = 800
+RESOLUTION_X = 800
+RESOLUTION_Y = 800
+TICKS_WAIT_INPUT = 30
 COLOR_ALPHA = (100, 100, 100)
 COLOR_ALPHA_3_SIDED = (255, 0, 0)
 COLOR_VERTEX = (150, 150, 150)
@@ -57,6 +42,42 @@ COLOR_BORDER_0 = (80, 80, 80)
 COLOR_BORDER_1 = (250, 0, 250)
 COLOR_VEL_VERTEX = (255, 255, 255)
 BACKGROUND_COLOR = (10,10,10)
+
+# 4.- SIZES
+VERTEX_SIZE = 4
+VERTEX_VEL_SIZE = 4
+ALPHA_SIZE= 4
+ALPHA_LEN= 10
+VERTEX_VEL_MULT = DELTA_T*10
+BORDER_SIZE=5
+FONT_SIZE_GRAIN = 9
+FONT_SIZE_BORDER = FONT_SIZE_GRAIN
+FONT_SIZE_VERTEX = FONT_SIZE_GRAIN
+
+
+""" DICTIONARIES """
+
+OPTIONS_VORONOI = {
+    "GENERATE_VORONOI": GENERATE_VORONOI,
+    "SEED_VORONOI": SEED_VORONOI,
+    "DIST_VORONOI": DIST_VORONOI,
+    "VORONOI_OUT_FOLDER": VORONOI_OUT_FOLDER
+}
+
+OPTIONS_VERTEX_MODEL = {
+    "TEST": TEST,
+    "ITERS_BETWEEN_PRINTS": ITERS_BETWEEN_PRINTS,
+    "MAX_ITER": MAX_ITER,
+    "MIN_GRAINS": MIN_GRAINS,
+    "GAMMA_0": GAMMA_0,
+    "INITIAL_N": INITIAL_N,
+    "DELTA_T": DELTA_T,
+    "VORONOI_OUT_FOLDER": VORONOI_OUT_FOLDER
+    #"MOV_VERTEX": MOV_VERTEX,
+    #"GRAND_EPS": GRAND_EPS,
+}
+
+
 OPTIONS_SHOW = {
     "RESOLUTION": RESOLUTION,
     "RESOLUTION_X": RESOLUTION_X,
@@ -87,16 +108,15 @@ OPTIONS_SHOW_COLOR = {
     "TEXT": (255, 255, 255),
     "BACK_TEXT": (0, 0, 0),
 }
+
 OPTIONS_SHOW_TAM = {
-    "VERTEX": 4,
-    "VERTEX_VEL": 4,
-    "ALPHA":5,
-    "ALPHA_LEN":10,
-    "VERTEX_VEL_MULT": DELTA_T*100,
-    "BORDER": 5,
-    "FONT_SIZE_GRAIN": 8,
-    "FONT_SIZE_BORDER": 8,
-    "FONT_SIZE_VERTEX": 8,
-
+    "VERTEX_SIZE": VERTEX_SIZE,
+    "VERTEX_VEL_SIZE": VERTEX_VEL_SIZE,
+    "ALPHA_SIZE":ALPHA_SIZE,
+    "ALPHA_LEN":ALPHA_LEN,
+    "VERTEX_VEL_MULT": VERTEX_VEL_MULT,
+    "BORDER_SIZE": BORDER_SIZE,
+    "FONT_SIZE_GRAIN": FONT_SIZE_GRAIN,
+    "FONT_SIZE_BORDER": FONT_SIZE_BORDER,
+    "FONT_SIZE_VERTEX": FONT_SIZE_VERTEX,
 }
-

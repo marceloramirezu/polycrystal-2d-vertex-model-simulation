@@ -1,5 +1,4 @@
 from inspect import ClassFoundException
-from subprocess import IDLE_PRIORITY_CLASS
 import numpy as np;
 from utils.geometry import *
 import math
@@ -11,12 +10,11 @@ class vertex_model:
     """ ==================================================================================================================================== """
     """ ==================== CONSTRUCTOR Y VARIABLES INICIALES  ==================================================================================== """
     """ ==================================================================================================================================== """
-    gamma_0= 0
-    mov_vertex= 0
+    #gamma_0= 0
+    #mov_vertex= 0
     n_grains = 0
     n_borders = 0
     n_vertices = 0
-    mov_vertex = 0
     actual_t = 0
     actual_iter = 0
     vertices = []
@@ -27,23 +25,34 @@ class vertex_model:
     cont_ext_borders = 0
     ext_borders = []
     actual_print_lvl = 3
+    energy = 0
+
+    flips_on_actual_iter = 0
+    removes_on_actual_iter = 0
     # Inicializa arreglos
     # lee estado inicial dado por algoritmo voronoi
     def __init__(self, OPTIONS_VERTEX_MODEL):
         self.voronoi_folder = OPTIONS_VERTEX_MODEL["VORONOI_OUT_FOLDER"]
-        self.gamma_0 = OPTIONS_VERTEX_MODEL["GAMMA_0"]
-        self.mov_vertex = OPTIONS_VERTEX_MODEL["MOV_VERTEX"]
         self.n_grains = OPTIONS_VERTEX_MODEL["INITIAL_N"]
         self.n_borders = OPTIONS_VERTEX_MODEL["INITIAL_N"]*3
         self.n_vertices = OPTIONS_VERTEX_MODEL["INITIAL_N"]*2
         self.delta_t = OPTIONS_VERTEX_MODEL["DELTA_T"]
         self.initial_delta_t = OPTIONS_VERTEX_MODEL["DELTA_T"]
-        self.grad_eps = OPTIONS_VERTEX_MODEL["GRAND_EPS"]
+        self.gamma_0 = OPTIONS_VERTEX_MODEL["GAMMA_0"]
+        self.max_iter = OPTIONS_VERTEX_MODEL["MAX_ITER"]
+        #self.mov_vertex = OPTIONS_VERTEX_MODEL["MOV_VERTEX"]
+        #self.grad_eps = OPTIONS_VERTEX_MODEL["GRAND_EPS"]
         
+        self.flips_on_actual_iter = 0
+        self.removes_on_actual_iter = 0
+        
+        self.energy = 0
+
         self.vertices = np.zeros(self.n_vertices, dtype=dt_vertex)         
         self.borders = np.zeros(self.n_borders, dtype=dt_border)         
         self.grains = np.zeros(self.n_grains, dtype=dt_grain) # (id, alpha, x1, x2, x3, ..., x50)
         
+        self.general = np.zeros(self.max_iter+1, dtype=dt_general)
         self.actual_t = 0
         self.actual_iter = 0
         self.leer_granos_voronoi()
@@ -89,10 +98,12 @@ class vertex_model:
     # calcula largos de arco y energias de los vertices
     def calculate_len_and_energy_vertices(self):      
         with np.nditer(self.borders, op_flags=['readwrite']) as it:
+            energy_aux = 0
             for border in it:
                 if ( not border["not_enabled"]):
                     self.calculate_len_and_energy_border(border)
-
+                    energy_aux += border["arc_len"]*border["gamma"]
+            self.energy = energy_aux
     def calculate_len_and_energy_border(self, border):
         xi_index = border["vertices"][0]
         xf_index = border["vertices"][1]
@@ -103,7 +114,7 @@ class vertex_model:
         border["tangent_vector"][0] = t_wrap["x_u"]
         border["tangent_vector"][1] = t_wrap["y_u"]
         # calcular energia del borde con la orientacion de los dos granos asociados y gamma_o
-        border["gamma"] = self.gamma_0*math.cos(0)
+        border["gamma"] = self.gamma_0 #*math.cos(0)
         
     # calcula velocidades de los vertices
     def calculate_vel_vertices(self):
@@ -128,8 +139,8 @@ class vertex_model:
             else: # si el vertice es el vertice final del borde se usa el vector tangente negativo
                 vel[0] = vel[0] - borde["gamma"]*borde["tangent_vector"][0]
                 vel[1] = vel[1] - borde["gamma"]*borde["tangent_vector"][1]       
-        vel[0] = vel[0]*self.mov_vertex
-        vel[1] = vel[1]*self.mov_vertex 
+        vel[0] = vel[0] # *self.mov_vertex
+        vel[1] = vel[1] # *self.mov_vertex 
         return vel
         
     # calcula diferencia de energia (NO UTILIZADO)
@@ -174,7 +185,6 @@ class vertex_model:
     # avanza los vertices a su nueva posicion
     def update_position_vertices(self):
         if(self.cont_ext_borders > 0):
-            #self.imprimir(f"self.cont_ext_borders t:{self.actual_iter} cont_ext:{self.cont_ext_borders}", 2)
             
             # por cada borde
             for c in range(0, self.cont_ext_borders):           
@@ -249,7 +259,6 @@ class vertex_model:
     """ ================== TRANSICION FLIP BORDER ========================================================================================== """
 
     def flip_border(self, vertice_1, vertice_2, flip_border):
-        print(f"\n\nFLIP BORDER: {flip_border}, v: ({vertice_1}, {vertice_2}); t:{self.actual_iter}")
         vertex_1 = self.vertices[vertice_1]
         p1 = vertex_1["pos_vector"]
         vertex_2 = self.vertices[vertice_2]
@@ -262,10 +271,6 @@ class vertex_model:
 
         # 2.- BORDES
         # 2.1.- seteo de bordes dentro de vertices ----------------------------------------------------------------------------------------------------------------
-        
-        #print("VERTICES PRE")
-        #print(f'BORDES VERTICE 1: {self.vertices[vertice_1]["borders"][0]}, {self.vertices[vertice_1]["borders"][1]}, {self.vertices[vertice_1]["borders"][2]}')
-        #print(f'BORDES VERTICE 2: {self.vertices[vertice_2]["borders"][0]}, {self.vertices[vertice_2]["borders"][1]}, {self.vertices[vertice_2]["borders"][2]}')
         
         v1_borders = self.vertices[vertice_1]["borders"]
         v1_index_border_flip = 0
@@ -288,10 +293,6 @@ class vertex_model:
         v2_post_b = self.vertices[vertice_2]["borders"][v2_index_post_b]
         v2_prev_b = self.vertices[vertice_2]["borders"][v2_index_prev_b]
 
-        #print(f"v1_index_border_flip: {v1_index_border_flip}, v1_index_prev_b: {v1_index_prev_b}, v1_index_post_b: {v1_index_post_b}")
-        #print(f"v2_index_border_flip: {v2_index_border_flip}, v2_index_prev_b: {v2_index_prev_b}, v2_index_post_b: {v2_index_post_b}")
-        #print(f"v1_prev_b: {v1_prev_b}, v1_post_b: {v1_post_b}")
-        #print(f"v2_prev_b: {v2_prev_b}, v2_post_b: {v2_post_b}")
         self.vertices[vertice_1]["borders"][0] = v1_prev_b
         self.vertices[vertice_1]["borders"][1] = v2_post_b
         self.vertices[vertice_1]["borders"][2] = flip_border
@@ -299,17 +300,8 @@ class vertex_model:
         self.vertices[vertice_2]["borders"][1] = v1_post_b
         self.vertices[vertice_2]["borders"][2] = flip_border
         
-        #print("VERTICES POST")
-        #print(f'BORDES VERTICE 1: {self.vertices[vertice_1]["borders"][0]}, {self.vertices[vertice_1]["borders"][1]}, {self.vertices[vertice_1]["borders"][2]}')
-        #print(f'BORDES VERTICE 2: {self.vertices[vertice_2]["borders"][0]}, {self.vertices[vertice_2]["borders"][1]}, {self.vertices[vertice_2]["borders"][2]}')
-        
         # 2.2.- seteo de vertices dentro de bordes ----------------------------------------------------------------------------------------------------------------
 
-        #print("\nBORDES PRE")
-        #print(f"vertice_1: {vertice_1}  vertice_2: {vertice_2}")
-        #print(f"VERTICES BORDE 1: {self.borders[v1_post_b]['vertices'][0]}, {self.borders[v1_post_b]['vertices'][1]}")
-        #print(f"VERTICES BORDE 2: {self.borders[v2_post_b]['vertices'][0]}, {self.borders[v2_post_b]['vertices'][1]}")
-        
         # v1_post_b se debe cambiar el vertice_1 por el vertice_2
         # v2_post_b se debe cambiar el vertice_2 por el vertice_1
         if (self.borders[v1_post_b]["vertices"][0] == vertice_1):
@@ -321,12 +313,7 @@ class vertex_model:
             self.borders[v2_post_b]["vertices"][0] = vertice_1
         else:
             self.borders[v2_post_b]["vertices"][1] = vertice_1
-
             
-        #print("BORDES POST")
-        #print(f"VERTICES BORDE 1: {self.borders[v1_post_b]['vertices'][0]}, {self.borders[v1_post_b]['vertices'][1]}")
-        #print(f"VERTICES BORDE 2: {self.borders[v2_post_b]['vertices'][0]}, {self.borders[v2_post_b]['vertices'][1]}")
-
         # 3.- GRANOS: ----------------------------------------------------------------------------------------------------------------------
         v1_grains = self.vertices[vertice_1]["grains"]
         v2_grains = self.vertices[vertice_2]["grains"]
@@ -342,12 +329,8 @@ class vertex_model:
             if grain not in grains_involve:
                 grains_involve.append(grain)
                 text_grains_involve = f"{text_grains_involve}, {grain}"
-
-        #print(f"GRAINS INVOLVE: {text_grains_involve[2:]}")
-        
-        
+                        
         # 3.1.- vertices en granos -----------------------------------------------------------
-        #print("\nVERTICES ON GRAIN START")
         # select grains with the two vertices of the border that flip
         pos_v1_in_two_vertices_grain = [] # pos in grain 1, pos in grain 2
         pos_v2_in_two_vertices_grain = [] # pos in grain 1, pos in grain 2
@@ -373,8 +356,8 @@ class vertex_model:
                 pos += 1
             if (encontrado_v1 and encontrado_v2):
                 two_vertices_grain.append(grain)
-                pos_v1_in_two_vertices_grain.append(pos_v1)
-                pos_v2_in_two_vertices_grain.append(pos_v2)
+                pos_v1_in_two_vertices_grain.append(pos_v1) # POS DEL VERTICE 1 EN EL PRIMER GRANO CON LOS DOS VERTICES
+                pos_v2_in_two_vertices_grain.append(pos_v2) # POS DEL VERTICE 2 EN EL PRIMER GRANO CON LOS DOS VERTICES
             elif(encontrado_v1):
                 v1_pos_in_v1_grain = pos_v1
                 v1_grain = grain
@@ -383,90 +366,49 @@ class vertex_model:
                 v2_grain = grain
             else:
                 pass
-        #print(f"\nTWO VERTICES GRAIN: ({two_vertices_grain[0]}, {two_vertices_grain[1]})")
-        #print(f"pos v1 in two vertices grain: ({pos_v1_in_two_vertices_grain[0]}, {pos_v1_in_two_vertices_grain[1]})")
-        #print(f"pos v2 in two vertices grain: ({pos_v2_in_two_vertices_grain[0]}, {pos_v2_in_two_vertices_grain[1]})")
-        #print(f"V1 GRAIN: {v1_grain}, pos_v1:{v1_pos_in_v1_grain}")
-        #print(f"V2 GRAIN: {v2_grain}, pos_v2:{v2_pos_in_v2_grain}")
-        #print(f"")
-        mantiene_solo_v1_two_vertices_grain = 0
-        mantiene_solo_v2_two_vertices_grain = 0
-        pos_del_vertice_two_vertices_grain = [0, 0] # grano 1, grano 2
-        if( pos_v1_in_two_vertices_grain[0] > pos_v2_in_two_vertices_grain[0] ): # en grano 1 pos_v2, pos_v1
-            # se elimina el vertice 1 en el grano 1 => grano 1 mantiene a vertice 2
-            mantiene_solo_v2_two_vertices_grain = two_vertices_grain[0]
-            # se elimina el vertice 2 en el grano 2 => grano 2 mantiene a vertice 1
-            mantiene_solo_v1_two_vertices_grain = two_vertices_grain[1]
-        else: # en grano 1 pos_v1, pos_v2
-            # se elimina el vertice 2 en el grano 1 => grano 1 mantiene a vertice 1
-            mantiene_solo_v1_two_vertices_grain = two_vertices_grain[0]
-            # se elimina el vertice 1 en el grano 2 => grano 2 mantiene a vertice 2
-            mantiene_solo_v2_two_vertices_grain = two_vertices_grain[1]
 
+        # LOS GRANOS QUE CONTIENEN LOS DOS VERTICES INVOLUCRADOS, SIEMPRE DEJAN AL ULTIMO VERTICE QUE LES PERTENECE, EN SENTIDO HORARIO
+        mantiene_solo_v1_tvg = 0 # TWO VERTICES GRAINS (GRANO CON LOS DOS VERTICES INVOLUCRADOS)
+        mantiene_solo_v2_tvg = 0
+        if( abs(pos_v1_in_two_vertices_grain[0] - pos_v2_in_two_vertices_grain[0]) == 1 ): # continuos dentro del grano -> el mayor es el ultimo
+            if( pos_v1_in_two_vertices_grain[0] > pos_v2_in_two_vertices_grain[0] ): # en grano 1, el vertice 1 es mayor al vertice 2 (v1 ultimo), por lo que se mantiene en el grano el vertice 1 y se elimina el vertice 2
+                mantiene_solo_v1_tvg = two_vertices_grain[0]
+                mantiene_solo_v2_tvg = two_vertices_grain[1]
+            else: # en grano 1 pos_v1, pos_v2
+                mantiene_solo_v1_tvg = two_vertices_grain[1]
+                mantiene_solo_v2_tvg = two_vertices_grain[0]
+        else: # discontinuos -> el menor es el ultimo
+            if( pos_v1_in_two_vertices_grain[0] > pos_v2_in_two_vertices_grain[0] ): # en grano 1 pos_v2, pos_v1
+                mantiene_solo_v1_tvg = two_vertices_grain[1]
+                mantiene_solo_v2_tvg = two_vertices_grain[0]
+            else: # en grano 1 pos_v1, pos_v2
+                mantiene_solo_v1_tvg = two_vertices_grain[0]
+                mantiene_solo_v2_tvg = two_vertices_grain[1]
 
-        #print(f"MANTIENE V1: {mantiene_solo_v1_two_vertices_grain}")
-        #print(f"MANTIENE V2: {mantiene_solo_v2_two_vertices_grain}")
+        self.delete_vertices_on_grain(mantiene_solo_v1_tvg, [vertice_2], vertice_1)
+        self.delete_vertices_on_grain(mantiene_solo_v2_tvg, [vertice_1], vertice_2)
 
-        self.delete_vertices_on_grain(mantiene_solo_v1_two_vertices_grain, [vertice_1], vertice_2)
-        self.delete_vertices_on_grain(mantiene_solo_v2_two_vertices_grain, [vertice_2], vertice_1)
         # el vertice 1 se agrega luego del vertice 2 en el grano que solo contiene el vertice 2
         self.add_vertex_on_grain(v2_grain, vertice_1, v2_pos_in_v2_grain+1)
         # el vertice 2 se agrega luego del vertice 1 en el grano que solo contiene el vertice 1
         self.add_vertex_on_grain(v1_grain, vertice_2, v1_pos_in_v1_grain+1)
 
-        #print("VERTICES ON GRAIN POST")
-
         # 3.2.- granos en vertices -----------------------------------------------------------
-        #print("GRAIN ON VERTICES START")
-        v1_grains_id = [self.grains[v1_grains[0]]["id"], self.grains[v1_grains[1]]["id"], self.grains[v1_grains[2]]["id"]]
-        v2_grains_id = [self.grains[v2_grains[0]]["id"], self.grains[v2_grains[1]]["id"], self.grains[v2_grains[2]]["id"]]
-        print(f"V1 GRAINS: {v1_grains_id}")
-        print(f"V2 GRAINS: {v2_grains_id}")
-        print(f"GRAIN_v1: {mantiene_solo_v1_two_vertices_grain}")
-        print(f"GRAIN_v2: {mantiene_solo_v2_two_vertices_grain}")
-
-        pos_grain_mantiene_solo_v1 = 0
-        pos_grain_mantiene_solo_v2 = 0
+       
+        self.vertices[vertice_1]["grains"][0] = v1_grain
+        self.vertices[vertice_1]["grains"][1] = mantiene_solo_v1_tvg
+        self.vertices[vertice_1]["grains"][2] = v2_grain
         
-        for i in range(0, 3):
-            if mantiene_solo_v1_two_vertices_grain == v1_grains_id[i]:
-                pos_grain_mantiene_solo_v1 = i
-            if mantiene_solo_v2_two_vertices_grain == v2_grains_id[i]:
-                pos_grain_mantiene_solo_v2 = i
+        self.vertices[vertice_2]["grains"][0] = v2_grain
+        self.vertices[vertice_2]["grains"][1] = mantiene_solo_v2_tvg
+        self.vertices[vertice_2]["grains"][2] = v1_grain 
         
-        pre_pos_grain_mantiene_solo_v1 = (pos_grain_mantiene_solo_v1-1)%3
-        pre_pos_grain_mantiene_solo_v2 = (pos_grain_mantiene_solo_v2+1)%3
-        print(f"pre_pos_v1: {pre_pos_grain_mantiene_solo_v1}")
-        print(f"pre_pos_v2: {pre_pos_grain_mantiene_solo_v2}")
-        
-        pre_grain_mantiene_solo_v1 = v1_grains_id[pre_pos_grain_mantiene_solo_v1]
-        pre_grain_mantiene_solo_v2 = v2_grains_id[pre_pos_grain_mantiene_solo_v2]
-        print(f"pre_v1: {pre_grain_mantiene_solo_v1}")
-        print(f"pre_v2: {pre_grain_mantiene_solo_v2}")
-        
-        self.vertices[vertice_1]["grains"][0] = mantiene_solo_v2_two_vertices_grain
-        self.vertices[vertice_1]["grains"][1] = pre_grain_mantiene_solo_v2
-        self.vertices[vertice_1]["grains"][2] = pre_grain_mantiene_solo_v1
-        
-        self.vertices[vertice_2]["grains"][0] = mantiene_solo_v1_two_vertices_grain
-        self.vertices[vertice_2]["grains"][1] = pre_grain_mantiene_solo_v1
-        self.vertices[vertice_2]["grains"][2] = pre_grain_mantiene_solo_v2
-
-        
-        print("GRAIN ON VERTICES POST")
-        print(f"V1 GRAINS: ({v1_grains[0]}, {v1_grains[1]}, {v1_grains[2]})")
-        print(f"V2 GRAINS: ({v2_grains[0]}, {v2_grains[1]}, {v2_grains[2]})\n")
-        
-        """  """        
 
         
     def add_vertex_on_grain(self, grain, add_vertex, pos):
-        #print(f"add_vertex_on_grain: (grain: {grain}), (add_vertex: {add_vertex}), (pos: {pos})")
         n_vertices = self.grains[grain]["n_vertices"]
         vertices = self.grains[grain]["vertices"]
-        #print(f"initial vertices: {self.grains[grain]['vertices'][0:(n_vertices+5)]}")
         post_vertices = list(vertices[pos:n_vertices])
-        #print(f"post_vertices: {post_vertices}")
         self.grains[grain]["vertices"][pos] = add_vertex
         cont = 0
         for post_v in post_vertices:
@@ -476,15 +418,12 @@ class vertex_model:
             else:
                 break
         self.grains[grain]["n_vertices"] = n_vertices+1
-        #print(f"final vertices: {self.grains[grain]['vertices'][0:n_vertices+5]}\n")
     
     """ ================== TRANSICION DELETE 3-SIDED GRAIN ================================================================================= """
     # Transicion Topologica borrar grano
     def delete_grain(self, id_grain):
-        self.imprimir(f"\n===============================================\nELIMINANDO GRANO t:{self.actual_iter} grano:{id_grain}", 2)
         grain = self.grains[id_grain]
         if (self.grains[id_grain]["not_enabled"]):
-            self.imprimir("ERROR, ELIMINANDO GRANO DESACTIVADO", 1)
             return 0
         self.grains[id_grain]["not_enabled"] = True
         
@@ -671,16 +610,66 @@ class vertex_model:
         
 
     def test_structure(self):
+        l_errors = []
+        # GRANOS
         # granos = 3 bordes = 2 vertices
-        for g in self.grains:
-            # revisar que sus 3 bordes esten activos
-            # revisar que sus n vertices esten activos
-            
-            pass
+        for g in range(0, self.n_grains):
+            grain = self.grains[g]
+            if(not grain["not_enabled"]):
+                # revisar que sus n vertices esten activos
+                n_vertices = grain["n_vertices"]     
+                for v in range(0, n_vertices):
+                    vi = grain["vertices"][v]
+                    vertex_i = self.vertices[vi]
+                    if(vertex_i["not_enabled"]):
+                        desc = f"grain: {g}, contiene vertice ({vi}) no habilitado"
+                        print(f"ERROR: {desc}")
+                        error = [self.actual_iter, "grain", b, desc]
+                        l_errors.append(error)                        
+
+                # revisar que sus vertices esten en sentido horario
+                pass
+
+        # VERTICES
         # vertice = 3 bordes habilitados = 3 granos habilitados
-        # grano = n_vertices habilitados
+        for v in range(0, self.n_vertices):
+            vertex = self.vertices[v]
+            if(not vertex["not_enabled"]):
+                # revisar que sus granos esten activos
+                for g in range(0, 3):
+                    gi = vertex["grains"][g]
+                    grain = self.grains[gi]
+                    if(grain["not_enabled"] ):
+                        desc = f"vertice: {v}, contiene grano ({gi}) no habilitado"
+                        print(f"ERROR: {desc}")
+                        error = [self.actual_iter, "vertex", v, desc]
+                        l_errors.append(error)
+                # revisar que sus bordes esten activos
+                for b in range(0, 3):
+                    bi = vertex["borders"][g]
+                    border_i = self.borders[bi]
+                    if(border_i["not_enabled"] ):
+                        desc = f"vertice: {v}, contiene borde ({bi}) no habilitado"
+                        print(f"ERROR: {desc}")
+                        error = [self.actual_iter, "vertex", v, desc]
+                        l_errors.append(error)
+                    
+        # BORDES        
         # borde = 2 vertices habilitados = 2 granos habilitados
-        pass
+        for b in range(0, self.n_borders):
+            border = self.borders[b]
+            if(not border["not_enabled"]):
+                # vertices habilitados                
+                for v in range(0, 2):
+                    vi = border["vertices"][v]
+                    vertex_i = self.vertices[vi]
+                    if(vertex_i["not_enabled"]):
+                        desc = f"borde: {b}, contiene vertice ({vi}) no habilitado"
+                        print(f"ERROR: {desc}")
+                        error = [self.actual_iter, "border", b, desc]
+                        l_errors.append(error)
+
+        return l_errors
 
     def calculate_grain_position(self):
         for i in range(0, self.n_grains):
@@ -956,7 +945,6 @@ class vertex_model:
                     theta_radians = math.atan2(delta_y, delta_x)
                     angle_grains.append(theta_radians)
 
-                #print(f"angle_grains: {angle_grains}")
                 max_angle = max(angle_grains)
                 max_pos = angle_grains.index(max_angle)
                 min_angle = min(angle_grains)
@@ -993,33 +981,42 @@ class vertex_model:
                     self.grains[g]["3_sided"] = 0
                 self.grains[g]["n_vertices"] = cont
 
-    # funcion auxiliar para imprimir por consola con niveles de prioridad
-    def imprimir(self, texto, lvl):
-        if(lvl <= self.actual_print_lvl):
-            print(texto)
-
-
+    
     """ ==================================================================================================================================== """
     """ ================== SAVE STATE FUNCTIONS ============================================================================== """
     """ ==================================================================================================================================== """
     # Guarda estado actual de la estructura (llama a las otras funciones de guardar)
     def save_actual_state(self):  
+        self.save_general_state()
         #self.save_general_t_state()
         self.save_vertices()
         self.save_borders()
         self.save_grains()
 
+    def save_general_state(self):
+        self.general[self.actual_iter - 1]["iter"] = self.actual_iter
+        self.general[self.actual_iter - 1]["t"] = round(self.actual_t, 6)
+        self.general[self.actual_iter - 1]["energy"] = self.energy
+        self.general[self.actual_iter - 1]["n_grains"] = self.n_grains
+        self.general[self.actual_iter - 1]["n_vertices"] = self.n_vertices
+        self.general[self.actual_iter - 1]["n_borders"] = self.n_borders
+        
     # guarda estado general en el tiempo actual
-    def save_general_t_state(self):
+    def save_all_states(self):
         tipo = "a"
-        if(self.actual_iter == 0):
-            tipo = 'w+'
         
         folder = "out"
-        file_name = f"{folder}/general.npy"
-        with open(file_name, tipo) as f:
-            start_line = f"{self.actual_iter}\n"
-            f.write(start_line) 
+        general_folder = f"{folder}"
+        file_name = f"{general_folder}/general.npy"
+        with open(file_name, 'wb+') as f:
+            np.save(f, self.general)
+
+        #file_name = f"{general_folder}/general.txt"
+        #with open(file_name, 'w+') as f:
+        #    for i in self.general:
+        #        line = f'iter: {i["iter"]} t:{i["t"]} energy:{i["energy"]} n_grains:{i["n_grains"]} n_vertices:{i["n_vertices"]} n_borders:{i["n_borders"]}\n'
+        #        f.write(line)
+
 
     # guarda arreglo vertices en el tiempo actual
     def save_vertices(self):
@@ -1029,12 +1026,13 @@ class vertex_model:
         with open(file_name, 'wb+') as f:
             np.save(f, self.vertices)
 
-        file_name = f"{vertex_folder}/{self.actual_iter}.txt"
-        with open(file_name, 'w+') as f:
-            for i in self.vertices:
-                line = f'{i["id"]} x:{i["pos_vector"][0]} y:{i["pos_vector"][1]} vx:{i["vel_vector"][0]} vy:{i["vel_vector"][1]} b:({i["borders"][0]}, {i["borders"][1]}, {i["borders"][2]})\n'
-                f.write(line)
+        #file_name = f"{vertex_folder}/{self.actual_iter}.txt"
+        #with open(file_name, 'w+') as f:
+        #    for i in self.vertices:
+        #        line = f'{i["id"]} x:{i["pos_vector"][0]} y:{i["pos_vector"][1]} vx:{i["vel_vector"][0]} vy:{i["vel_vector"][1]} b:({i["borders"][0]}, {i["borders"][1]}, {i["borders"][2]})\n'
+        #        f.write(line)
             
+
     # guarda arreglo de bordes en el tiempo actual
     def save_borders(self):
         folder = "out"
@@ -1043,11 +1041,12 @@ class vertex_model:
         with open(file_name, 'wb+') as f:
             np.save(f, self.borders)
 
-        file_name = f"{border_folder}/{self.actual_iter}.txt"
-        with open(file_name, 'w+') as f:
-            for i in self.borders:
-                line = f'{i["id"]} {i["arc_len"]} {i["tangent_vector"][0]} {i["tangent_vector"][1]}\n'
-                f.write(line)
+        #file_name = f"{border_folder}/{self.actual_iter}.txt"
+        #with open(file_name, 'w+') as f:
+        #    for i in self.borders:
+        #        line = f'{i["id"]} {i["arc_len"]} {i["tangent_vector"][0]} {i["tangent_vector"][1]}\n'
+        #        f.write(line)
+
 
     # guarda arreglo de granos en el tiempo actual
     def save_grains(self):

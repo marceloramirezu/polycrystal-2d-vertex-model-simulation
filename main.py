@@ -56,6 +56,7 @@ def main():
     vxm.save_actual_state()
     max_t = OPTIONS_VERTEX_MODEL["MAX_ITER"]
     actual_per = 0
+    l_errors = []
     while (vxm.actual_iter <= max_t):
         if(vxm.actual_iter % (OPTIONS_VERTEX_MODEL["MAX_ITER"]/100) ==0):
             print(f"Simulado: {actual_per}%, ITER: {vxm.actual_iter}")
@@ -84,14 +85,21 @@ def main():
         # 8.- guarda estado actual 
         if(vxm.actual_iter % OPTIONS_VERTEX_MODEL["ITERS_BETWEEN_PRINTS"] == 0):
             vxm.save_actual_state()
-    
+        
+        if(OPTIONS_VERTEX_MODEL["TEST"]):
+            l_errors_aux = vxm.test_structure()
+            if(len(l_errors_aux) > 0):
+                exit()
+            l_errors.append(l_errors_aux)
+    vxm.save_all_states()
     # fin ciclo principal
     # obtener tiempo de ejecucion
     et = time.time()
     elapsed_time = et - st
     print(f"FIN ITER: {vxm.actual_iter-1}\n")
     print('Execution time:', elapsed_time, 'seconds')
-
+    print(f"\n\nERRORES EN ESTRUCTURA: {len(l_errors)}")
+    print(l_errors)
         
 if __name__ == '__main__':
     main()
