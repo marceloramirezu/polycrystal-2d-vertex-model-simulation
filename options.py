@@ -14,8 +14,8 @@ VORONOI_OUT_FOLDER="utils/voronoi/salida"
 # 2.- SIMULATION OPTIONS ----------------------------------------------------------------------
 TEST = False              # test structure 
 ITERS_BETWEEN_PRINTS =  5 # timesteps between saves
-MAX_ITER = 10000           # max timesteps
-INITIAL_N = 1000          # number of grains
+MAX_ITER = 1000           # max timesteps
+INITIAL_N = 100          # number of grains
 MIN_GRAINS = 50           # min number of grains
 GAMMA_0 = 1 
 DELTA_T = 1e-4  
