@@ -38,6 +38,7 @@ dt_border = np.dtype([
 dt_grain = np.dtype([
     ('id', np.uint), 
     ('alpha', np.longdouble), 
+    ('area', np.longdouble),     
     ('pos_vector', np.longdouble, (2,)), 
     ('vertices', np.int, (50,)),
     ('n_vertices', np.uint), 
@@ -60,6 +61,7 @@ dt_general = np.dtype([
     ('n_vertices', np.uint),
     ('n_borders', np.uint),
     ('n_grains', np.uint),
+    ('total_area', np.longdouble),    
     ('energy', np.longdouble),
     ('flip', np.bool_),
     ('remove', np.bool_),

@@ -26,6 +26,7 @@ class vertex_model:
     ext_borders = []
     actual_print_lvl = 3
     energy = 0
+    total_area = 0.0
 
     flips_on_actual_iter = 0
     removes_on_actual_iter = 0
@@ -46,6 +47,7 @@ class vertex_model:
         self.flips_on_actual_iter = 0
         self.removes_on_actual_iter = 0
         
+        self.total_area = 0.0
         self.energy = 0
 
         self.vertices = np.zeros(self.n_vertices, dtype=dt_vertex)         
@@ -104,6 +106,7 @@ class vertex_model:
                     self.calculate_len_and_energy_border(border)
                     energy_aux += border["arc_len"]*border["gamma"]
             self.energy = energy_aux
+
     def calculate_len_and_energy_border(self, border):
         xi_index = border["vertices"][0]
         xf_index = border["vertices"][1]
@@ -178,8 +181,6 @@ class vertex_model:
             diff_arc = new_arc_lengths[b] - self.borders[vertex["borders"][b]]["arc_len"]
             bnd_term += diff_arc
 
-   
-            
         return (-bnd_term / self.grad_eps)
 
     # avanza los vertices a su nueva posicion
@@ -212,7 +213,8 @@ class vertex_model:
         
         # cada vertice asociado a un borde que se extingue en la iteracion actual avanza la  delta_t - t_ext
         for i in range(0, self.cont_ext_borders):    
-            break    # arreglar, falta hacer flip
+            
+            #break    # arreglar, falta hacer flip
                      # si se activa sin los flips implementados los bordes tienen la posibilidad de crecer si las velocidades de los vertices asociados apuntan en direcciones contrarias (el borde dejaria de estar clasificado como ext y se podria mover)                     
             id_b = self.ext_borders[i]["id"]
             t_ext_b = self.ext_borders[i]["t_ext"]
@@ -249,6 +251,81 @@ class vertex_model:
         I=np.argsort(Tcopy,order=['t_ext'])
         self.ext_borders = self.ext_borders[I]
 
+
+    def calcular_area_granos(self):
+        area_total = 0
+        cont_n = 0
+        cont_p = 0
+
+        for g in range(0, self.n_grains):
+            if(not self.grains[g]["not_enabled"]):
+                area = self.calcular_area_grano(g) 
+                if(area < 0):
+                    cont_n += 1
+                else:              
+                    cont_p += 1     
+                if(area < 0):
+                    area = -1*area
+                area_total += area          
+
+        self.total_area = area_total
+
+    # calcula area de un grano con teorema de green
+    def calcular_area_grano(self, grano_id):
+        grano = self.grains[grano_id]
+        vertices_grano = grano["vertices"]
+        area = 0.0
+        n_vertices = grano["n_vertices"]
+        vertices = [] #eliminar
+        x_list_v_i = []
+        y_list_v_i = []
+        for i in range(0, 50):
+            v_grain_i = vertices_grano[i]
+            if(v_grain_i != -1):
+                v_i = self.vertices[v_grain_i]
+                vertices.append(v_i["id"])
+                x_list_v_i.append(v_i["pos_vector"][0])
+                y_list_v_i.append(v_i["pos_vector"][1])
+            else:
+                break
+        
+
+        for v in range(0, len(x_list_v_i)):
+            a = x_list_v_i[v]
+            x_list_v_i[v] = a
+            b= y_list_v_i[v]
+            y_list_v_i[v] = b
+
+        for v in range(0, (len(x_list_v_i))):
+            v_p1 = v+1
+            if(v == len(x_list_v_i)-1):
+                v_p1 = 0
+
+            x_i = x_list_v_i[v]
+            x_i_p1 = x_list_v_i[v_p1]
+            y_i = y_list_v_i[v]
+            y_i_p1 = y_list_v_i[v_p1]
+            if(abs(x_i-x_i_p1) > 0.5):
+                if(x_i < x_i_p1):
+                    x_i_p1 = x_i_p1-1
+                    x_list_v_i[v_p1] = x_i_p1
+                else:
+                    x_i_p1 = x_i_p1+1
+                    x_list_v_i[v_p1] = x_i_p1
+            if(abs(y_i-y_i_p1) > 0.5):
+                if(y_i < y_i_p1):
+                    y_i_p1 = y_i_p1-1
+                    y_list_v_i[v_p1] = y_i_p1
+                else:
+                    y_i_p1 = y_i_p1+1
+                    y_list_v_i[v_p1] = y_i_p1
+            
+            area += (x_i*y_i_p1)-(x_i_p1*y_i)
+
+        area = area/2
+        self.grains[grano_id]["area"] = area
+
+        return area
 
 
     """ ==================================================================================================================================== """
@@ -427,7 +504,6 @@ class vertex_model:
             return 0
         self.grains[id_grain]["not_enabled"] = True
         
-        alpha = grain["alpha"]
         n_vertices = grain["n_vertices"]
         vertices = grain["vertices"][0:n_vertices]
         
@@ -994,12 +1070,28 @@ class vertex_model:
         self.save_grains()
 
     def save_general_state(self):
+        cont_grains = 0
+        for i in range(0, self.n_grains):
+            if(not self.grains[i]["not_enabled"]):
+                cont_grains +=1
+        
+        cont_vertices = 0
+        for i in range(0, self.n_vertices):
+            if(not self.vertices[i]["not_enabled"]):
+                cont_vertices +=1
+        
+        cont_borders = 0
+        for i in range(0, self.n_borders):
+            if(not self.borders[i]["not_enabled"]):
+                cont_borders +=1
+
         self.general[self.actual_iter - 1]["iter"] = self.actual_iter
         self.general[self.actual_iter - 1]["t"] = round(self.actual_t, 6)
         self.general[self.actual_iter - 1]["energy"] = self.energy
-        self.general[self.actual_iter - 1]["n_grains"] = self.n_grains
-        self.general[self.actual_iter - 1]["n_vertices"] = self.n_vertices
-        self.general[self.actual_iter - 1]["n_borders"] = self.n_borders
+        self.general[self.actual_iter - 1]["total_area"] = self.total_area 
+        self.general[self.actual_iter - 1]["n_grains"] = cont_grains 
+        self.general[self.actual_iter - 1]["n_vertices"] = cont_vertices
+        self.general[self.actual_iter - 1]["n_borders"] = cont_borders
         
     # guarda estado general en el tiempo actual
     def save_all_states(self):
@@ -1026,11 +1118,11 @@ class vertex_model:
         with open(file_name, 'wb+') as f:
             np.save(f, self.vertices)
 
-        #file_name = f"{vertex_folder}/{self.actual_iter}.txt"
-        #with open(file_name, 'w+') as f:
-        #    for i in self.vertices:
-        #        line = f'{i["id"]} x:{i["pos_vector"][0]} y:{i["pos_vector"][1]} vx:{i["vel_vector"][0]} vy:{i["vel_vector"][1]} b:({i["borders"][0]}, {i["borders"][1]}, {i["borders"][2]})\n'
-        #        f.write(line)
+        file_name = f"{vertex_folder}/{self.actual_iter}.txt"
+        with open(file_name, 'w+') as f:
+            for i in self.vertices:
+                line = f'{i["id"]} x:{i["pos_vector"][0]} y:{i["pos_vector"][1]} vx:{i["vel_vector"][0]} vy:{i["vel_vector"][1]} b:({i["borders"][0]}, {i["borders"][1]}, {i["borders"][2]})\n'
+                f.write(line)
             
 
     # guarda arreglo de bordes en el tiempo actual
@@ -1051,7 +1143,14 @@ class vertex_model:
     # guarda arreglo de granos en el tiempo actual
     def save_grains(self):
         folder = "out"
-        vertex_folder = f"{folder}/grains"
-        file_name = f"{vertex_folder}/{self.actual_iter}.npy"
+        grain_folder = f"{folder}/grains"
+        file_name = f"{grain_folder}/{self.actual_iter}.npy"
         with open(file_name, 'wb+') as f:
             np.save(f, self.grains)
+
+        
+        #file_name = f"{grain_folder}/{self.actual_iter}.txt"
+        #with open(file_name, 'w+') as f:
+        #    for i in self.vertices:
+        #        line = f'{i["id"]} vertices:'
+        #        f.write(line)

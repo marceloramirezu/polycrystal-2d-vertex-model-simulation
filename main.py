@@ -61,7 +61,10 @@ def main():
         if(vxm.actual_iter % (OPTIONS_VERTEX_MODEL["MAX_ITER"]/100) ==0):
             print(f"Simulado: {actual_per}%, ITER: {vxm.actual_iter}")
             actual_per+=1
-                
+
+        #if(vxm.actual_iter == 0):        
+        vxm.calcular_area_granos()
+        
         # 2.- calcular vectores tangentes, largos de arco y energias
         vxm.calculate_len_and_energy_vertices()     
         
@@ -83,7 +86,7 @@ def main():
         vxm.next_iteration()               
                                
         # 8.- guarda estado actual 
-        if(vxm.actual_iter % OPTIONS_VERTEX_MODEL["ITERS_BETWEEN_PRINTS"] == 0):
+        if( (vxm.actual_iter % OPTIONS_VERTEX_MODEL["ITERS_BETWEEN_PRINTS"] == 0) ):           
             vxm.save_actual_state()
         
         if(OPTIONS_VERTEX_MODEL["TEST"]):

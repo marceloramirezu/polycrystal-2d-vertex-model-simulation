@@ -13,13 +13,13 @@ VORONOI_OUT_FOLDER="utils/voronoi/salida"
 
 # 2.- SIMULATION OPTIONS ----------------------------------------------------------------------
 TEST = False              # test structure 
-ITERS_BETWEEN_PRINTS =  1 # timesteps between saves
-MAX_ITER = 1000           # max timesteps
-INITIAL_N = 3000          # number of grains
+ITERS_BETWEEN_PRINTS =  5 # timesteps between saves
+MAX_ITER = 10000           # max timesteps
+INITIAL_N = 1000          # number of grains
 MIN_GRAINS = 50           # min number of grains
 GAMMA_0 = 1 
 DELTA_T = 1e-4  
-
+SAVE_STRUCTURE=False
 
 
 """ ------------------------------------------------------------------------------------------------
@@ -47,12 +47,14 @@ VERTEX_VEL_SIZE = 4
 ALPHA_SIZE= 4
 ALPHA_LEN= 10
 VERTEX_VEL_MULT = DELTA_T*10
-BORDER_SIZE=5
-FONT_SIZE_GRAIN = 9
+BORDER_SIZE= 5
+FONT_SIZE_GRAIN = 12
 FONT_SIZE_BORDER = FONT_SIZE_GRAIN
 FONT_SIZE_VERTEX = FONT_SIZE_GRAIN
 
 
+# 5.- STATS
+FIGURE_FOLDER = "figures"
 
 
 
@@ -73,7 +75,8 @@ OPTIONS_VERTEX_MODEL = {
     "GAMMA_0": GAMMA_0,
     "INITIAL_N": INITIAL_N,
     "DELTA_T": DELTA_T,
-    "VORONOI_OUT_FOLDER": VORONOI_OUT_FOLDER
+    "VORONOI_OUT_FOLDER": VORONOI_OUT_FOLDER,
+    "SAVE_STRUCTURE":SAVE_STRUCTURE
     #"MOV_VERTEX": MOV_VERTEX,
     #"GRAND_EPS": GRAND_EPS,
 }
