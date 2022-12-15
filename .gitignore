@@ -1,6 +1,6 @@
 # ignore out files
-out/borders
-out/grains
-out/vertices
+out/borders/*
+out/grains/*
+out/vertices/*
 # ignore voronoi out files
 #utils/voronoi/salida
