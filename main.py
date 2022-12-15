@@ -29,6 +29,15 @@ def delete_old_files():
 
 
 def main():    
+
+    
+    if not os.path.isdir("out/borders"):
+        os.makedirs("out/borders")
+    if not os.path.isdir("out/vertices"):
+        os.makedirs("out/vertices")
+    if not os.path.isdir("out/grains"):
+        os.makedirs("out/grains")
+    
     # elimina archivos antiguos
     delete_old_files()    
 
