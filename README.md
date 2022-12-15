@@ -3,7 +3,7 @@
 Python3
 
 ## Install required libraries
-pip install requirements.txt
+pip install -r requirements.txt
 
 ## Options file
 options.py
