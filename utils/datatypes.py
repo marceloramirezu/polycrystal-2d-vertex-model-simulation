@@ -40,9 +40,9 @@ dt_grain = np.dtype([
     ('alpha', np.longdouble), 
     ('area', np.longdouble),     
     ('pos_vector', np.longdouble, (2,)), 
-    ('vertices', np.int64, (50,)), # cambiar 
+    ('vertices', np.int64, (50,)), 
     ('n_vertices', np.int64), 
-    ('3_sided', np.int64),  # cambiar por int_
+    ('3_sided', np.int64),  
     ('not_enabled', np.bool_), 
     ('x_wrap', np.bool_), 
     ('y_wrap', np.bool_), 
