@@ -3,10 +3,10 @@ import numpy as np;
 # (id, (x, y), (vx, vy), (b1, b2, b3), energy, not_enabled))
 # borders: contiene los indices de los bordes guardados en self.borders
 dt_vertex = np.dtype([
-    ('id', np.uint), 
+    ('id', np.int64), 
     ('pos_vector', np.longdouble, (2,)), 
     ('vel_vector', np.longdouble, (2,)), 
-    ('borders', np.uint, (3,)), 
+    ('borders', np.int64, (3,)), 
     ('grains', np.int, (3,)), 
     ('grains_angle', np.longdouble, (3,)), 
     ('energy', np.longdouble), 
@@ -20,8 +20,8 @@ dt_vertex = np.dtype([
 # (id, (x, y), (diff_x, diff_y), gamma, arc_len, energy, not_enabled))
 # vertices: contiene los indices de los vertices guardados en self.vertices
 dt_border = np.dtype([
-    ('id', np.uint), 
-    ('vertices', np.uint, (2,)),
+    ('id', np.int64), 
+    ('vertices', np.int64, (2,)),
     ('tangent_vector', np.longdouble, (2,)), 
     ('diff_vector', np.longdouble, (2,)), 
     ('gamma', np.longdouble), 
@@ -36,20 +36,20 @@ dt_border = np.dtype([
 # (id, alpha, (x0, x1, ...,xn))
 # vertices: contiene los indices de los vertices guardados en self.vertices
 dt_grain = np.dtype([
-    ('id', np.uint), 
+    ('id', np.int64), 
     ('alpha', np.longdouble), 
     ('area', np.longdouble),     
     ('pos_vector', np.longdouble, (2,)), 
-    ('vertices', np.int, (50,)),
-    ('n_vertices', np.uint), 
-    ('3_sided', np.int), 
+    ('vertices', np.int64, (50,)), # cambiar 
+    ('n_vertices', np.int64), 
+    ('3_sided', np.int64),  # cambiar por int_
     ('not_enabled', np.bool_), 
     ('x_wrap', np.bool_), 
     ('y_wrap', np.bool_), 
 ])
 
 dt_ext_border = np.dtype([
-    ('id', np.uint), 
+    ('id', np.int64), 
     ('t_ext', np.longdouble),
     ('diff_t_ext', np.longdouble),
 ])
@@ -58,9 +58,9 @@ dt_ext_border = np.dtype([
 dt_general = np.dtype([
     ('t', np.longdouble), 
     ('iter', np.longdouble), 
-    ('n_vertices', np.uint),
-    ('n_borders', np.uint),
-    ('n_grains', np.uint),
+    ('n_vertices', np.int64),
+    ('n_borders', np.int64),
+    ('n_grains', np.int64),
     ('total_area', np.longdouble),    
     ('energy', np.longdouble),
     ('flip', np.bool_),

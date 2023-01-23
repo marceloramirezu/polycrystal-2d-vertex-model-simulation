@@ -131,32 +131,32 @@ def generate_voronoi(
     np.random.seed(seed)
     vrtx, ridgs = get_voronoi_data(N)
 
-    print("Vertices: %d"%(len(vrtx),))
-    print("Ridges: %d"%(len(ridgs),))
+    #print("Vertices: %d"%(len(vrtx),))
+    #print("Ridges: %d"%(len(ridgs),))
 
     # Generate orientations
     orientations = np.random.rand(N)
-    with open(file_orientations, "w") as ori_file:
+    with open(file_orientations, "w+") as ori_file:
         for alpha in orientations:
             ori_file.write("%.16f\n" % alpha)
-    print("Orientations: %d" % (len(orientations)))
+    #print("Orientations: %d" % (len(orientations)))
     # Generate stored energy using triangular probability dist
     if dist == 'triangular':
-        print("Using triangular distribution for SE")
+        #print("Using triangular distribution for SE")
         SE = np.random.triangular(3,6,6,N)
     else:
         # Generate with uniform
-        print("Using uniform distribution for SE")
+        #print("Using uniform distribution for SE")
         SE = np.random.rand(N)
-    with open(file_SE, "w") as SE_file:
+    with open(file_SE, "w+") as SE_file:
         for se in SE:
             SE_file.write("%.16f\n" % se)
-    print("SE %s: %d" % (dist,len(SE)))
+    #print("SE %s: %d" % (dist,len(SE)))
     # Print to files.
-    with open(file_vertices,"w") as vrtx_file:
+    with open(file_vertices,"w+") as vrtx_file:
         for (x,y) in vrtx:
             vrtx_file.write(VERTEX_OUTPUT_FORMAT%(x,y))
 
-    with open(file_ridges,"w") as ridg_file:
+    with open(file_ridges,"w+") as ridg_file:
         for (a,b) in ridgs:
             ridg_file.write("%d %d\n"%(a,b))

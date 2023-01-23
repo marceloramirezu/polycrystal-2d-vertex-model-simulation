@@ -2,5 +2,8 @@
 out/borders/*
 out/grains/*
 out/vertices/*
+pruebas.ipynb
+venv/*
+venv
 # ignore voronoi out files
-#utils/voronoi/salida
+utils/voronoi/salida/*

@@ -1,119 +1,108 @@
 
 from utils.vertex_model import vertex_model
-from options import OPTIONS_VERTEX_MODEL, OPTIONS_VORONOI
+from options_simulation import OPTIONS
 from utils.voronoi.voronoi import generate_voronoi
-import os
 import time
+from datetime import datetime, timezone;
 
-
-
-def delete_old_files():
-    path = "out/borders/"
-    for file_name in os.listdir(path):        
-        file = path + file_name                
-        if os.path.isfile(file):            
-            os.remove(file)
-    path = "out/vertices/"
-    for file_name in os.listdir(path):        
-        file = path + file_name        
-        if os.path.isfile(file):            
-            os.remove(file)
-    path = "out/grains/"
-    for file_name in os.listdir(path):        
-        file = path + file_name        
-        if os.path.isfile(file):            
-            os.remove(file)
-    file = "out/general.txt"    
-    if os.path.isfile(file):        
-        os.remove(file)
-
+from utils.file_functions import create_folders, save_options, save_simulation_name, save_simulation_time, delete_simulation;
 
 def main():    
-
-    
-    if not os.path.isdir("out/borders"):
-        os.makedirs("out/borders")
-    if not os.path.isdir("out/vertices"):
-        os.makedirs("out/vertices")
-    if not os.path.isdir("out/grains"):
-        os.makedirs("out/grains")
-    
-    # elimina archivos antiguos
-    delete_old_files()    
-
-    # generar estructura inicial con algoritmo voronoi
-    if(OPTIONS_VORONOI["GENERATE_VORONOI"]):
-        print(f"GENERATE_VORONOI")
-        generate_voronoi(OPTIONS_VERTEX_MODEL["INITIAL_N"], OPTIONS_VORONOI["SEED_VORONOI"], OPTIONS_VORONOI["DIST_VORONOI"])
-
-    # iniciar vertices, bordes y granos con estructura generada con algoritmo voronoi
-    print(f"\nSTART VERTEX MODEL")
-    vxm = vertex_model(OPTIONS_VERTEX_MODEL)
-    
-
-    # guarda tiempo de ejecucion actual
-    st = time.time()
-
-
-    # ciclo principal
-    vxm.calculate_len_and_energy_vertices()     
-    vxm.calculate_vel_vertices()                
-    vxm.calculate_t_ext()                       
-    vxm.ordenar_ext_borders()   
-    vxm.calculate_grain_position()
-    # guardar estado inicial (t=0)
-    vxm.save_actual_state()
-    max_t = OPTIONS_VERTEX_MODEL["MAX_ITER"]
     actual_per = 0
     l_errors = []
-    while (vxm.actual_iter <= max_t):
-        if(vxm.actual_iter % (OPTIONS_VERTEX_MODEL["MAX_ITER"]/100) ==0):
-            print(f"Simulado: {actual_per}%, ITER: {vxm.actual_iter}")
-            actual_per+=1
+    # Nombre de simulacion
+    MIN_GRAINS = OPTIONS["OPTIONS_VERTEX_MODEL"]["MIN_GRAINS"]
+    MAX_TIMESTEP = OPTIONS["OPTIONS_VERTEX_MODEL"]["MAX_TIMESTEP"]
+    INITIAL_N_GRAINS = OPTIONS["OPTIONS_VERTEX_MODEL"]["INITIAL_N_GRAINS"]
+    ct_utc = datetime.now(timezone.utc)
+    ct_utc_str =ct_utc.strftime("%m-%d-%Y_%Hh%Mm%Ss")
+    out_folder = f"out_N{INITIAL_N_GRAINS}_t{MAX_TIMESTEP}_{ct_utc_str}"
 
-        #if(vxm.actual_iter == 0):        
-        vxm.calcular_area_granos()
-        
-        # 2.- calcular vectores tangentes, largos de arco y energias
-        vxm.calculate_len_and_energy_vertices()     
-        
-        # 3.- calcular velocidad de los vertices a partir del vector tangente
-        vxm.calculate_vel_vertices()                
+    create_folders(out_folder)
+    save_options(out_folder, OPTIONS)
+    save_simulation_name(out_folder)
 
-        # 4.- calcular tiempos de extincion para cada borde
-        vxm.calculate_t_ext()                       
-
-        # 5.- obtener bordes que se extinguen dentro del intervalo actual
-        vxm.ordenar_ext_borders()  
-             
-        # 6.- actualiza posición de vertices (actualiza vertices asociados a bordes que se extinguen en la iteracion actual por separado)
-        vxm.update_position_vertices()           
-
-        vxm.calculate_grain_position()
-
-        # 7.- actualiza iteracion y tiempo actual   
-        vxm.next_iteration()               
-                               
-        # 8.- guarda estado actual 
-        if( (vxm.actual_iter % OPTIONS_VERTEX_MODEL["ITERS_BETWEEN_PRINTS"] == 0) ):           
-            vxm.save_actual_state()
-        
-        if(OPTIONS_VERTEX_MODEL["TEST"]):
-            l_errors_aux = vxm.test_structure()
-            if(len(l_errors_aux) > 0):
-                exit()
-            l_errors.append(l_errors_aux)
-    vxm.save_all_states()
-    # fin ciclo principal
-    # obtener tiempo de ejecucion
-    et = time.time()
-    elapsed_time = et - st
-    print(f"FIN ITER: {vxm.actual_iter-1}\n")
-    print('Execution time:', elapsed_time, 'seconds')
     
-    if(OPTIONS_VERTEX_MODEL["TEST"]):
-        print(f"\n\nERRORES EN ESTRUCTURA: {len(l_errors)}")
-        print(l_errors)
+    try:
+        if(OPTIONS["OPTIONS_VORONOI"]["GENERATE_VORONOI"]):
+            print(f"Generating initial structure (with voronoi)\n")
+            seed_voronoi = OPTIONS["OPTIONS_VORONOI"]["SEED_VORONOI"]
+            dist_voronoi = OPTIONS["OPTIONS_VORONOI"]["DIST_VORONOI"]
+            generate_voronoi(INITIAL_N_GRAINS, seed_voronoi, dist_voronoi)
+
         
+        print("START VERTEX MODEL")
+        vxm = vertex_model(OPTIONS["OPTIONS_VERTEX_MODEL"], out_folder)
+        vxm.read_initial_structure_voronoi()
+        
+
+        # start execution time
+        start_execution_time = time.time()
+
+
+        
+        print(f"MAX_TIMESTEP: {MAX_TIMESTEP}")
+        while ((vxm.ACTUAL_TIMESTEP < MAX_TIMESTEP) and ((vxm.N_GRAINS > MIN_GRAINS))):
+    
+            
+            if( (vxm.ACTUAL_TIMESTEP % OPTIONS["OPTIONS_VERTEX_MODEL"]["ITERS_BETWEEN_PRINTS"] == 0) ):           
+                vxm.save_actual_state()
+
+            if(vxm.ACTUAL_TIMESTEP % (MAX_TIMESTEP/100) ==0): # imprime porcentaje de simulacion
+                print(f"Max timestep Progress: {actual_per}%,\tactual timestep: {vxm.ACTUAL_TIMESTEP},\tN° Grains:{vxm.N_GRAINS}")
+                actual_per+=1
+        
+            
+            vxm.calculate_arclen_and_energy_all_borders()     
+            vxm.calculate_grains_areas()
+            
+            vxm.calculate_vel_vertices()                
+    
+            vxm.calculate_t_ext(vxm.DELTA_T)                       
+
+            vxm.ordenar_ext_borders()  
+                
+            vxm.update_position_vertices_ext_borders()    # advance_ext_borders_to_t_ext       
+            vxm.update_position_vertices()       # advance_normal_vertices_to_delta_t     
+            vxm.final_update_position_vertices_ext_borders()     # advance_ext_borders_to_delta_t      
+
+            vxm.calculate_grain_position() 
+            
+            vxm.count_number_of_components()
+
+            
+            if(OPTIONS["OPTIONS_VERTEX_MODEL"]["TEST"]):
+                l_errors_aux = vxm.test_structure()
+                if(len(l_errors_aux) > 0):
+                    exit()
+                l_errors.append(l_errors_aux)
+            
+            vxm.next_iteration()    
+            
+        if( (vxm.ACTUAL_TIMESTEP % OPTIONS["OPTIONS_VERTEX_MODEL"]["ITERS_BETWEEN_PRINTS"] == 0) ):      
+                print(f"Max timestep Progress: {actual_per}%\tactual timestep: {vxm.ACTUAL_TIMESTEP}\tN° Grains:{vxm.N_GRAINS}")
+                vxm.save_actual_state()
+        # END WHILE
+
+        vxm.save_general_state_all_time()
+        et = time.time()
+        elapsed_time = et - start_execution_time
+        print(f"Final timestep: {vxm.last_timestep_saved}\n")
+        print('Execution time:', elapsed_time, 'seconds')
+        save_simulation_time(elapsed_time, (vxm.last_timestep_saved))
+        
+        if(OPTIONS["OPTIONS_VERTEX_MODEL"]["TEST"]):
+            print(f"\n\n# Structure errors: {len(l_errors)}\nerrors:")
+            print(l_errors)
+            
+        print(f"\nSIMULATION SAVE IN {out_folder}")
+    except Exception as e: 
+        print(f"\nERROR IN SIMULATION")
+        print(e)
+        print(f"Deleting files...")
+        delete_simulation(out_folder)
+
+
+
 if __name__ == '__main__':
     main()

@@ -1,4 +1,5 @@
 # polycrystal-2d-vertex-model-simulation
+
 ## Requieriments
 Python3
 
@@ -6,14 +7,15 @@ Python3
 pip install -r requirements.txt
 
 ## Options file
-options.py
+options_simulation.py
+options_visualization.py
 
 ## run simulation and generate files
 py main.py 
 or
 python main.py
 
-## run visualization 
+## run visualization
 py show.py
 or
 python show.py
