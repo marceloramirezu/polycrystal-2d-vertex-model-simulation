@@ -1,4 +1,5 @@
 # ignore out files
+out/
 out/borders/*
 out/grains/*
 out/vertices/*
