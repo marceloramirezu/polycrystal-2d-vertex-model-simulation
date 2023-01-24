@@ -1,6 +1,6 @@
 # polycrystal-2d-vertex-model-simulation
 
-## Requieriments
+## Requirements
 Python3
 Anaconda or Miniconda
 
@@ -9,18 +9,19 @@ conda create --name python-env python=3.11
 conda activate python-env
 
 ## Install required libraries
-conda install --file requirements.txt
+pip install -r requirements.txt
+*pip is necessary for pygame library
 
 ## Options file
-options_simulation.py
-options_visualization.py
+options_simulation.py: Parameters for the simulation (Voronoi seed, Initial grains, Delta t, etc...)
+options_visualization.py: Parameters for the visualization (Resolution, Colors, font size, etc...)
 
-## run simulation and generate files
+## Run simulation and generate files
 py main.py 
 or
 python main.py
 
-## run visualization
+## Run visualization
 py show.py
 or
 python show.py
