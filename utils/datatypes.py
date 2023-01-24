@@ -7,7 +7,7 @@ dt_vertex = np.dtype([
     ('pos_vector', np.longdouble, (2,)), 
     ('vel_vector', np.longdouble, (2,)), 
     ('borders', np.int64, (3,)), 
-    ('grains', np.int, (3,)), 
+    ('grains', np.int64, (3,)), 
     ('grains_angle', np.longdouble, (3,)), 
     ('energy', np.longdouble), 
     ('not_enabled', np.bool_),
@@ -28,7 +28,7 @@ dt_border = np.dtype([
     ('energy', np.longdouble), 
     ('arc_len', np.longdouble), 
     ('t_ext', np.longdouble), 
-    ('ext', np.int_),
+    ('ext', np.int64),
     ('not_enabled', np.bool_), 
 ])
 

@@ -67,6 +67,10 @@ def delete_simulation(sim_name):
     os.rmdir(sim_path) 
 
 def create_folders(out_folder):
+    try:
+        os.mkdir(f"out")
+    except:
+        pass
     os.mkdir(f"out/{out_folder}")
     os.mkdir(f"out/{out_folder}/grains")
     os.mkdir(f"out/{out_folder}/borders")
